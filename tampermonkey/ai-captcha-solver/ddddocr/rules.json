@@ -1,0 +1,26 @@
+{
+    "https://hpoa.gxhpkj.com.cn/login": {
+        "url": "https://hpoa.gxhpkj.com.cn/login",
+        "img": 0,
+        "input": 2,
+        "inputType": "input",
+        "type": "img",
+        "captchaType": "general"
+    },
+    "http://111.12.44.182:18088/login": {
+        "url": "http://111.12.44.182:18088/login",
+        "img": 0,
+        "input": 2,
+        "inputType": "input",
+        "type": "img",
+        "captchaType": "general"
+    },
+    "http://192.168.5.107:8000/login": {
+        "url": "http://192.168.5.107:8000/login",
+        "img": 0,
+        "input": 2,
+        "inputType": "input",
+        "type": "img",
+        "captchaType": "general"
+    }
+}
