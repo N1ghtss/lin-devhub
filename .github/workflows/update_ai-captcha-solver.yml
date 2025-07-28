@@ -1,0 +1,60 @@
+name: Update AI Captcha Solver Source
+
+on:
+  workflow_dispatch: # Allows manual trigger
+  schedule:
+    # shellcheck disable=SC2215
+    - cron: '0 0 * * *' # Runs daily at midnight UTC
+
+jobs:
+  update-source:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: upstream/ai-captcha-solver
+
+      - name: Set up Git sparse-checkout
+        run: |
+          TARGET_DIR="tampermonkey/ai-captcha-solver/source-code"
+          TEMP_CLONE_DIR=".temp_sparse_checkout"
+          REMOTE_REPO="https://github.com/ezyshu/UserScript.git"
+          SUBDIR="CAPTCHA-automatic-recognition"
+          
+          echo "📦 Creating temporary directory and initializing sparse-checkout..."
+          rm -rf "$TEMP_CLONE_DIR"
+          mkdir "$TEMP_CLONE_DIR"
+          cd "$TEMP_CLONE_DIR"
+          git init
+          git remote add origin "$REMOTE_REPO"
+          git config core.sparseCheckout true
+          echo "$SUBDIR/" >> .git/info/sparse-checkout
+          
+          echo "⬇️ Pulling subdirectory $SUBDIR..."
+          git pull --depth=1 origin main
+          
+          cd ..
+          
+          echo "📁 Copying $SUBDIR to ./$TARGET_DIR..."
+          mkdir -p "$TARGET_DIR"
+          rm -rf "$TARGET_DIR/$SUBDIR"
+          cp -r "$TEMP_CLONE_DIR/$SUBDIR" "$TARGET_DIR/"
+          
+          rm -rf "$TEMP_CLONE_DIR"
+          echo "✅ ✅ ✅ Source code update complete ✅ ✅ ✅ "
+
+      - name: Commit and Push changes
+        run: |
+          TARGET_DIR="tampermonkey/ai-captcha-solver/source-code"
+          SUBDIR="CAPTCHA-automatic-recognition"
+          REMOTE_REPO="https://github.com/ezyshu/UserScript.git"
+          
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add "$TARGET_DIR/$SUBDIR"
+          git commit -m "Add $SUBDIR from $REMOTE_REPO via sparse-checkout" || echo "No changes to commit"
+          git push origin upstream/ai-captcha-solver
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
