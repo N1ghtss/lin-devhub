@@ -789,7 +789,7 @@ export default {
             result = await this.recognizeWithQwen(base64Image);
             break;
           case "ddddocr":
-            // console.log("使用阿里云通义千问API识别验证码");
+            // console.log("使用ddddocr API识别验证码");
             result = await this.recognizeWithDdddocr(base64Image);
             break;
           default:
@@ -1155,6 +1155,9 @@ export default {
         method: "POST",
         url: apiUrl + "identify_GeneralCAPTCHA",
         data: JSON.stringify(datas),
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
       if (response.data) {
         // const text = response.data.choices[0].message.content;
