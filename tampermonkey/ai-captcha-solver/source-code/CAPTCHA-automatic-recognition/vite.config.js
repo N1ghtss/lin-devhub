@@ -14,8 +14,8 @@ export default defineConfig({
         name: "AI验证码自动识别填充-自用版",
         namespace: 'https://github.com/ezyshu/UserScript',
         description: "自动识别网页上的验证码并填充到输入框中，点击识别图标触发识别。",
-        updateURL: "https://raw.githubusercontent.com/N1ghtss/lin-devhub/refs/heads/main/tampermonkey/ai-captcha-solver/CAPTCHA-automatic-recognition/dist/CAPTCHA-automatic-recognition.user.js",
-        downloadURL: "https://raw.githubusercontent.com/N1ghtss/lin-devhub/refs/heads/main/tampermonkey/ai-captcha-solver/CAPTCHA-automatic-recognition/dist/CAPTCHA-automatic-recognition.user.js",
+        updateURL: "https://raw.githubusercontent.com/N1ghtss/lin-devhub/refs/heads/main/tampermonkey/ai-captcha-solver/CAPTCHA-automatic-recognition.user.js",
+        downloadURL: "https://raw.githubusercontent.com/N1ghtss/lin-devhub/refs/heads/main/tampermonkey/ai-captcha-solver/CAPTCHA-automatic-recognition.user.js",
         version: pkg.version,
         match: ['*://*/*'], // 可以根据需要限制匹配的网站
         grant: [
