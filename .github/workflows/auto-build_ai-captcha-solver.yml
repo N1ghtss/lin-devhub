@@ -1,0 +1,50 @@
+name: Auto Build CAPTCHA User Script
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'tampermonkey/ai-captcha-solver/source-code/CAPTCHA-automatic-recognition/**'
+
+jobs:
+  build-and-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: tampermonkey/ai-captcha-solver/source-code/CAPTCHA-automatic-recognition
+        run: npm install
+
+      - name: Bump patch version and build
+        working-directory: tampermonkey/ai-captcha-solver/source-code/CAPTCHA-automatic-recognition
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "Old version: $VERSION"
+          echo "New version: $NEW_VERSION"
+
+          jq --arg v "$NEW_VERSION" '.version = $v' package.json > tmp.json && mv tmp.json package.json
+
+          npm run build
+
+      - name: Commit and push build output
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add tampermonkey/ai-captcha-solver/CAPTCHA-automatic-recognition.user.js \
+                  tampermonkey/ai-captcha-solver/source-code/CAPTCHA-automatic-recognition/package.json
+
+          git commit -m "Auto build CAPTCHA script" || echo "No changes to commit"
+          git push
