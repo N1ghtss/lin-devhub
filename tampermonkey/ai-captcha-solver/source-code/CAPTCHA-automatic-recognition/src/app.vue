@@ -829,7 +829,7 @@ export default {
         case "qwen":
           return !!this.settings.qwenKey;
         case "ddddocr":
-          return !!this.settings.ddddocrApiUrl;
+          return true;
         default:
           return false;
       }
