@@ -10,4 +10,6 @@ services:
     environment:
       - DEBUG=1
     restart: always
-    command: python /app/app/SimpleCaptcha.py
+    #    command: python /app/app/SimpleCaptcha.py
+    command: gunicorn -w 5 -b 0.0.0.0:8000 --worker-class gevent --keep-alive 10  SimpleCaptcha:app
+

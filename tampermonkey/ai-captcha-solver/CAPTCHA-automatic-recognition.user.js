@@ -2530,8 +2530,8 @@
         // 可能的值：'', 'loading', 'success', 'error'
         // 设置项
         settings: {
-          apiType: "openai",
-          // openai, gemini, qwen
+          apiType: "ddddocr",
+          // openai, gemini, qwen, ddddocr
           // OpenAI 设置
           openaiKey: "",
           openaiApiUrl: "",
