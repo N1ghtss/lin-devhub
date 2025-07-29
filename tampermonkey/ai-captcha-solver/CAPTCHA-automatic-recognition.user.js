@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AI验证码自动识别填充-自用版
 // @namespace    https://github.com/ezyshu/UserScript
-// @version      9.9.9
+// @version      1.0.1
 // @author       knight
 // @description  自动识别网页上的验证码并填充到输入框中，点击识别图标触发识别。
 // @license      Apache-2.0
@@ -17,20 +17,13 @@
 // @grant        GM_xmlhttpRequest
 // ==/UserScript==
 
-(t => {
-  if (typeof GM_addStyle == "function") {
-    GM_addStyle(t);
-    return
-  }
-  const o = document.createElement("style");
-  o.textContent = t, document.head.append(o)
-})(` .captcha-recognition-container{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji",Segoe UI Symbol!important;font-size:14px!important;line-height:1.5!important;color:#333!important;box-sizing:border-box!important}.captcha-recognition-container *,.captcha-recognition-container *:before,.captcha-recognition-container *:after{box-sizing:border-box!important;font-family:inherit!important}.captcha-recognition-container input,.captcha-recognition-container textarea,.captcha-recognition-container select,.captcha-recognition-container button{font-family:inherit!important;font-size:inherit!important;line-height:inherit!important}.captcha-recognition-icon{display:inline-block!important;width:20px!important;height:20px!important;vertical-align:middle!important;margin-left:5px!important;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>')!important;background-size:contain!important;cursor:pointer!important;position:relative!important;z-index:999!important;opacity:.7!important;transition:opacity .2s!important}.captcha-recognition-icon:hover{opacity:1!important}.input-group-append{position:relative!important}.input-group-append .captcha-recognition-icon{position:absolute!important;left:100%!important}.captcha-recognition-loading{background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>')!important;animation:captcha-spin 1s linear infinite!important}@keyframes captcha-spin{0%{transform:rotate(0)}to{transform:rotate(360deg)}}.captcha-recognition-success{background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="green" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>')!important}.captcha-recognition-error{background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>')!important}body.captcha-settings-open{overflow:hidden!important}.captcha-settings-modal{position:fixed!important;top:0!important;left:0!important;width:100%!important;height:100%!important;background-color:#00000080!important;display:flex!important;justify-content:center!important;align-items:center!important;z-index:2147483647!important;text-align:left!important}.captcha-settings-content{background-color:#fff!important;color:#333!important;padding:20px 15px 20px 20px!important;border-radius:8px!important;width:450px!important;max-width:90%!important;max-height:90vh!important;overflow-y:auto!important;box-shadow:0 4px 12px #00000026!important;height:auto!important;display:flex!important;flex-direction:column!important}.captcha-settings-content::-webkit-scrollbar,.settings-card::-webkit-scrollbar,.domain-textarea::-webkit-scrollbar,.captcha-settings-content textarea::-webkit-scrollbar{width:4px!important;height:8px!important}.captcha-settings-content::-webkit-scrollbar-track,.settings-card::-webkit-scrollbar-track,.domain-textarea::-webkit-scrollbar-track,.captcha-settings-content textarea::-webkit-scrollbar-track{background:#f1f1f1!important;border-radius:4px!important}.captcha-settings-content::-webkit-scrollbar-thumb,.settings-card::-webkit-scrollbar-thumb,.domain-textarea::-webkit-scrollbar-thumb,.captcha-settings-content textarea::-webkit-scrollbar-thumb{background:#ccc!important;border-radius:4px!important}.captcha-settings-content h3{margin-top:0!important;color:#333!important;font-size:18px!important;margin-bottom:16px!important;text-align:center!important;font-weight:700!important}.captcha-settings-content h3 span{font-size:14px!important}.captcha-settings-item{margin-bottom:12px!important;display:flex!important;flex-direction:column}.captcha-settings-item label{display:block!important;margin-bottom:4px!important;color:#555!important;font-size:14px!important}.captcha-settings-item input[type=text],.captcha-settings-item select,.captcha-settings-item textarea{width:100%!important;padding:0 8px!important;border:1px solid #ddd!important;background:none!important;border-radius:4px!important;font-size:14px!important;box-sizing:border-box!important;background:#fff!important;color:#333!important;margin:0!important}.captcha-settings-item input[type=text],.captcha-settings-item select{height:33px!important}.captcha-settings-item textarea{resize:vertical!important;min-height:80px!important}.captcha-settings-item small{font-size:12px!important;color:#777!important;display:block!important;margin-top:4px!important}.textarea-with-button{position:relative!important;display:flex!important;flex-direction:column!important}.use-default-prompt{position:absolute!important;top:5px!important;right:5px!important;background-color:#f1f1f1!important;border:1px solid #ddd!important;border-radius:4px!important;padding:4px 8px!important;font-size:12px!important;cursor:pointer!important;color:#333!important;transition:background-color .2s!important}.use-default-prompt:hover{background-color:#e4e4e4!important}.captcha-settings-buttons{display:flex!important;justify-content:flex-end!important;margin-top:20px!important;gap:10px!important;position:relative!important;z-index:10!important}.captcha-settings-buttons button{padding:8px 16px!important;border:none!important;border-radius:4px!important;cursor:pointer!important;font-size:14px!important;transition:background-color .2s!important}.captcha-settings-buttons button:first-child{background-color:#1a73e8!important;color:#fff!important}.captcha-settings-buttons button:first-child:hover{background-color:#1557b0!important}.captcha-settings-buttons button:last-child{background-color:#f1f1f1!important;color:#333!important}.captcha-settings-buttons button:last-child:hover{background-color:#e4e4e4!important}.dev-settings-button{width:50px!important;height:50px!important;display:flex!important;align-items:center!important;justify-content:center!important;position:fixed!important;bottom:20px!important;right:20px!important;background-color:#fff!important;color:#fff!important;border-radius:50%!important;cursor:pointer!important;z-index:9999!important;font-size:14px!important;box-shadow:0 2px 5px #0003!important;transition:background-color .2s!important}.dev-settings-button svg{color:#1557b0}.dev-settings-button:hover{opacity:.9}#captcha-toast-container{position:fixed!important;top:20px!important;right:20px!important;z-index:9999!important;display:flex!important;flex-direction:column!important;gap:10px!important;pointer-events:none!important;text-align:left!important}.captcha-toast{width:280px!important;padding:12px 16px!important;border-radius:4px!important;box-shadow:0 4px 12px #00000026!important;color:#fff!important;font-size:14px!important;opacity:0!important;transform:translateY(-20px)!important;transition:all .3s ease!important;pointer-events:auto!important;word-break:break-word!important;text-align:left!important}.captcha-toast-show{opacity:1!important;transform:translateY(0)!important}.captcha-toast-hide{opacity:0!important;transform:translateY(-20px)!important}.captcha-toast-info{background-color:#1a73e8!important}.captcha-toast-success{background-color:#4caf50!important}.captcha-toast-error{background-color:#f44336!important}.input-with-button{position:relative!important;display:flex!important;align-items:center!important}.input-with-button input{flex:1!important}.test-api-button{background-color:#1a73e8!important;color:#fff!important;border:none!important;border-radius:4px!important;padding:8px 12px!important;font-size:14px!important;cursor:pointer!important;transition:background-color .2s,color .2s!important;min-width:80px!important;display:flex!important;justify-content:center!important;align-items:center!important;height:33px!important;margin-left:10px!important}.captcha-settings-tip{margin:16px 0!important;padding:12px!important;background-color:#f8f9fa!important;border-left:4px solid #1a73e8!important;border-radius:4px!important;font-size:13px!important;color:#333!important}.captcha-settings-tip p{margin:0 0 8px!important}.captcha-settings-tip ol{margin:8px 0 0!important;padding-left:24px!important}.captcha-settings-tip li{margin-bottom:4px!important}.test-api-button:hover{background-color:#1557b0!important}.test-api-button.test-loading{background-color:#f1f1f1!important;color:#666!important;position:relative!important}.test-api-button.test-loading:after{content:""!important;position:absolute!important;width:12px!important;height:12px!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%);border:2px solid #666!important;border-radius:50%!important;border-top-color:transparent!important;animation:captcha-spin-transform 1s linear infinite!important}@keyframes captcha-spin-transform{0%{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}.test-api-button.test-success{background-color:#4caf50!important;color:#fff!important}.test-api-button.test-error{background-color:#f44336!important;color:#fff!important}img[style="z-index: 2; position: absolute; bottom: -11px; left: 206px; width: 88px; height: 40px;"]+.captcha-recognition-icon{position:absolute!important;left:270px!important}.authcode.co>a:nth-child(2)>#authImage+.captcha-recognition-icon{display:none!important}#yzCode{position:relative}#yzCode>.captcha-recognition-icon{position:absolute!important;right:0!important}.settings-nav{display:flex!important;border-bottom:1px solid #eee!important;margin-bottom:20px!important;padding-bottom:2px!important}.settings-nav::-webkit-scrollbar{display:none!important}.settings-nav-item{padding:10px 15px!important;cursor:pointer!important;font-size:14px!important;color:#666!important;position:relative!important;transition:all .3s!important;-webkit-user-select:none!important;user-select:none!important;white-space:nowrap!important}.settings-nav-item:hover{color:#1a73e8!important}.settings-nav-item.active{color:#1a73e8!important;font-weight:700!important}.settings-nav-item.active:after{content:""!important;position:absolute!important;bottom:-2px!important;left:0!important;width:100%!important;height:2px!important;background-color:#1a73e8!important;border-radius:2px!important}.settings-content{min-height:420px!important;position:relative!important}.settings-content-tab{animation:captcha-fadeIn .3s ease!important;position:absolute!important;top:0!important;left:0!important;width:100%!important}@keyframes captcha-fadeIn{0%{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.settings-card{background-color:#f9f9f9!important;border-radius:8px!important;padding:15px!important;margin-bottom:15px!important;border:1px solid #eee!important;box-shadow:0 2px 4px #0000000d!important;height:100%!important;display:flex!important;flex-direction:column!important;overflow-y:auto!important;max-height:400px!important}.settings-card-title{font-weight:700!important;margin-bottom:12px!important;color:#333!important;font-size:15px!important;display:flex!important;align-items:center!important;justify-content:space-between!important}.settings-card-title .api-type{color:#1a73e8!important}.settings-section{margin-bottom:20px!important}.settings-section-title{font-weight:700!important;margin-bottom:10px!important;color:#333!important;font-size:15px!important;border-bottom:1px solid #eee!important;padding-bottom:5px!important}.advanced-settings-warning{font-size:12px!important;color:#ff4d4f!important;margin-bottom:10px!important;font-weight:700!important;padding:8px!important;background-color:#fff2f0!important;border-radius:4px!important;border:1px solid #ffccc7!important}.tutorial-link{font-size:12px!important;color:#1890ff!important;margin-left:8px!important;text-decoration:none!important;font-weight:400!important}.tutorial-link:hover{text-decoration:underline!important}.custom-selectors{display:flex!important;flex-direction:column!important;gap:8px!important}.selector-item{display:flex!important;align-items:center!important;gap:8px!important}.selector-item input{flex:1!important}.remove-selector{background-color:#ff4d4f!important;color:#fff!important;border:none!important;border-radius:50%!important;width:24px!important;height:24px!important;font-size:16px!important;line-height:1!important;cursor:pointer!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:0!important}.add-selector{margin-top:8px!important;background-color:#1890ff!important;color:#fff!important;border:none!important;border-radius:4px!important;padding:4px 12px!important;font-size:14px!important;cursor:pointer!important;align-self:flex-start!important}.add-selector:hover{background-color:#40a9ff!important}.remove-selector:hover{background-color:#ff7875!important}.domain-textarea{width:100%!important;border:1px solid #ddd!important;border-radius:4px!important;padding:8px!important;resize:vertical!important;font-family:monospace!important;font-size:14px!important}.reload-rules-button{display:inline-flex!important;align-items:center!important;justify-content:center!important;padding:6px 12px!important;height:34px!important;font-size:14px!important;border-radius:4px!important;border:1px solid #ddd!important;background-color:#f7f7f7!important;cursor:pointer!important;transition:all .3s!important;min-width:120px!important}.reload-rules-button:hover{background-color:#e7e7e7!important}.reload-rules-button.test-loading{background-color:#f5f5f5!important;position:relative!important;color:transparent!important}.reload-rules-button.test-loading:after{content:""!important;width:16px!important;height:16px!important;border:2px solid #666!important;border-top-color:transparent!important;border-radius:50%!important;position:absolute!important;left:50%!important;top:50%!important;margin-left:-8px!important;margin-top:-8px!important;animation:captcha-spin 1s linear infinite!important}.reload-rules-button.test-success{background-color:#eaf7ea!important;border-color:#c3e6c3!important;color:#2a862a!important}.reload-rules-button.test-error{background-color:#fce7e7!important;border-color:#f5c2c2!important;color:#d63030!important}.rules-management{display:flex!important;flex-direction:column!important;gap:10px!important}.rules-url-input{display:flex!important;flex-direction:column!important;gap:5px!important}.rules-url-input input{width:100%!important;padding:8px!important;border:1px solid #ddd!important;border-radius:4px!important;font-size:14px!important}.rules-url-input small{color:#666!important;font-size:12px!important}@media (max-width: 768px){.settings-nav-item{padding:10px!important}} `);
+(t=>{if(typeof GM_addStyle=="function"){GM_addStyle(t);return}const o=document.createElement("style");o.textContent=t,document.head.append(o)})(` .captcha-recognition-container{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji",Segoe UI Symbol!important;font-size:14px!important;line-height:1.5!important;color:#333!important;box-sizing:border-box!important}.captcha-recognition-container *,.captcha-recognition-container *:before,.captcha-recognition-container *:after{box-sizing:border-box!important;font-family:inherit!important}.captcha-recognition-container input,.captcha-recognition-container textarea,.captcha-recognition-container select,.captcha-recognition-container button{font-family:inherit!important;font-size:inherit!important;line-height:inherit!important}.captcha-recognition-icon{display:inline-block!important;width:20px!important;height:20px!important;vertical-align:middle!important;margin-left:5px!important;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>')!important;background-size:contain!important;cursor:pointer!important;position:relative!important;z-index:999!important;opacity:.7!important;transition:opacity .2s!important}.captcha-recognition-icon:hover{opacity:1!important}.input-group-append{position:relative!important}.input-group-append .captcha-recognition-icon{position:absolute!important;left:100%!important}.captcha-recognition-loading{background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>')!important;animation:captcha-spin 1s linear infinite!important}@keyframes captcha-spin{0%{transform:rotate(0)}to{transform:rotate(360deg)}}.captcha-recognition-success{background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="green" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>')!important}.captcha-recognition-error{background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>')!important}body.captcha-settings-open{overflow:hidden!important}.captcha-settings-modal{position:fixed!important;top:0!important;left:0!important;width:100%!important;height:100%!important;background-color:#00000080!important;display:flex!important;justify-content:center!important;align-items:center!important;z-index:2147483647!important;text-align:left!important}.captcha-settings-content{background-color:#fff!important;color:#333!important;padding:20px 15px 20px 20px!important;border-radius:8px!important;width:450px!important;max-width:90%!important;max-height:90vh!important;overflow-y:auto!important;box-shadow:0 4px 12px #00000026!important;height:auto!important;display:flex!important;flex-direction:column!important}.captcha-settings-content::-webkit-scrollbar,.settings-card::-webkit-scrollbar,.domain-textarea::-webkit-scrollbar,.captcha-settings-content textarea::-webkit-scrollbar{width:4px!important;height:8px!important}.captcha-settings-content::-webkit-scrollbar-track,.settings-card::-webkit-scrollbar-track,.domain-textarea::-webkit-scrollbar-track,.captcha-settings-content textarea::-webkit-scrollbar-track{background:#f1f1f1!important;border-radius:4px!important}.captcha-settings-content::-webkit-scrollbar-thumb,.settings-card::-webkit-scrollbar-thumb,.domain-textarea::-webkit-scrollbar-thumb,.captcha-settings-content textarea::-webkit-scrollbar-thumb{background:#ccc!important;border-radius:4px!important}.captcha-settings-content h3{margin-top:0!important;color:#333!important;font-size:18px!important;margin-bottom:16px!important;text-align:center!important;font-weight:700!important}.captcha-settings-content h3 span{font-size:14px!important}.captcha-settings-item{margin-bottom:12px!important;display:flex!important;flex-direction:column}.captcha-settings-item label{display:block!important;margin-bottom:4px!important;color:#555!important;font-size:14px!important}.captcha-settings-item input[type=text],.captcha-settings-item select,.captcha-settings-item textarea{width:100%!important;padding:0 8px!important;border:1px solid #ddd!important;background:none!important;border-radius:4px!important;font-size:14px!important;box-sizing:border-box!important;background:#fff!important;color:#333!important;margin:0!important}.captcha-settings-item input[type=text],.captcha-settings-item select{height:33px!important}.captcha-settings-item textarea{resize:vertical!important;min-height:80px!important}.captcha-settings-item small{font-size:12px!important;color:#777!important;display:block!important;margin-top:4px!important}.textarea-with-button{position:relative!important;display:flex!important;flex-direction:column!important}.use-default-prompt{position:absolute!important;top:5px!important;right:5px!important;background-color:#f1f1f1!important;border:1px solid #ddd!important;border-radius:4px!important;padding:4px 8px!important;font-size:12px!important;cursor:pointer!important;color:#333!important;transition:background-color .2s!important}.use-default-prompt:hover{background-color:#e4e4e4!important}.captcha-settings-buttons{display:flex!important;justify-content:flex-end!important;margin-top:20px!important;gap:10px!important;position:relative!important;z-index:10!important}.captcha-settings-buttons button{padding:8px 16px!important;border:none!important;border-radius:4px!important;cursor:pointer!important;font-size:14px!important;transition:background-color .2s!important}.captcha-settings-buttons button:first-child{background-color:#1a73e8!important;color:#fff!important}.captcha-settings-buttons button:first-child:hover{background-color:#1557b0!important}.captcha-settings-buttons button:last-child{background-color:#f1f1f1!important;color:#333!important}.captcha-settings-buttons button:last-child:hover{background-color:#e4e4e4!important}.dev-settings-button{width:50px!important;height:50px!important;display:flex!important;align-items:center!important;justify-content:center!important;position:fixed!important;bottom:20px!important;right:20px!important;background-color:#fff!important;color:#fff!important;border-radius:50%!important;cursor:pointer!important;z-index:9999!important;font-size:14px!important;box-shadow:0 2px 5px #0003!important;transition:background-color .2s!important}.dev-settings-button svg{color:#1557b0}.dev-settings-button:hover{opacity:.9}#captcha-toast-container{position:fixed!important;top:20px!important;right:20px!important;z-index:9999!important;display:flex!important;flex-direction:column!important;gap:10px!important;pointer-events:none!important;text-align:left!important}.captcha-toast{width:280px!important;padding:12px 16px!important;border-radius:4px!important;box-shadow:0 4px 12px #00000026!important;color:#fff!important;font-size:14px!important;opacity:0!important;transform:translateY(-20px)!important;transition:all .3s ease!important;pointer-events:auto!important;word-break:break-word!important;text-align:left!important}.captcha-toast-show{opacity:1!important;transform:translateY(0)!important}.captcha-toast-hide{opacity:0!important;transform:translateY(-20px)!important}.captcha-toast-info{background-color:#1a73e8!important}.captcha-toast-success{background-color:#4caf50!important}.captcha-toast-error{background-color:#f44336!important}.input-with-button{position:relative!important;display:flex!important;align-items:center!important}.input-with-button input{flex:1!important}.test-api-button{background-color:#1a73e8!important;color:#fff!important;border:none!important;border-radius:4px!important;padding:8px 12px!important;font-size:14px!important;cursor:pointer!important;transition:background-color .2s,color .2s!important;min-width:80px!important;display:flex!important;justify-content:center!important;align-items:center!important;height:33px!important;margin-left:10px!important}.captcha-settings-tip{margin:16px 0!important;padding:12px!important;background-color:#f8f9fa!important;border-left:4px solid #1a73e8!important;border-radius:4px!important;font-size:13px!important;color:#333!important}.captcha-settings-tip p{margin:0 0 8px!important}.captcha-settings-tip ol{margin:8px 0 0!important;padding-left:24px!important}.captcha-settings-tip li{margin-bottom:4px!important}.test-api-button:hover{background-color:#1557b0!important}.test-api-button.test-loading{background-color:#f1f1f1!important;color:#666!important;position:relative!important}.test-api-button.test-loading:after{content:""!important;position:absolute!important;width:12px!important;height:12px!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%);border:2px solid #666!important;border-radius:50%!important;border-top-color:transparent!important;animation:captcha-spin-transform 1s linear infinite!important}@keyframes captcha-spin-transform{0%{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}.test-api-button.test-success{background-color:#4caf50!important;color:#fff!important}.test-api-button.test-error{background-color:#f44336!important;color:#fff!important}img[style="z-index: 2; position: absolute; bottom: -11px; left: 206px; width: 88px; height: 40px;"]+.captcha-recognition-icon{position:absolute!important;left:270px!important}.authcode.co>a:nth-child(2)>#authImage+.captcha-recognition-icon{display:none!important}#yzCode{position:relative}#yzCode>.captcha-recognition-icon{position:absolute!important;right:0!important}.settings-nav{display:flex!important;border-bottom:1px solid #eee!important;margin-bottom:20px!important;padding-bottom:2px!important}.settings-nav::-webkit-scrollbar{display:none!important}.settings-nav-item{padding:10px 15px!important;cursor:pointer!important;font-size:14px!important;color:#666!important;position:relative!important;transition:all .3s!important;-webkit-user-select:none!important;user-select:none!important;white-space:nowrap!important}.settings-nav-item:hover{color:#1a73e8!important}.settings-nav-item.active{color:#1a73e8!important;font-weight:700!important}.settings-nav-item.active:after{content:""!important;position:absolute!important;bottom:-2px!important;left:0!important;width:100%!important;height:2px!important;background-color:#1a73e8!important;border-radius:2px!important}.settings-content{min-height:420px!important;position:relative!important}.settings-content-tab{animation:captcha-fadeIn .3s ease!important;position:absolute!important;top:0!important;left:0!important;width:100%!important}@keyframes captcha-fadeIn{0%{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.settings-card{background-color:#f9f9f9!important;border-radius:8px!important;padding:15px!important;margin-bottom:15px!important;border:1px solid #eee!important;box-shadow:0 2px 4px #0000000d!important;height:100%!important;display:flex!important;flex-direction:column!important;overflow-y:auto!important;max-height:400px!important}.settings-card-title{font-weight:700!important;margin-bottom:12px!important;color:#333!important;font-size:15px!important;display:flex!important;align-items:center!important;justify-content:space-between!important}.settings-card-title .api-type{color:#1a73e8!important}.settings-section{margin-bottom:20px!important}.settings-section-title{font-weight:700!important;margin-bottom:10px!important;color:#333!important;font-size:15px!important;border-bottom:1px solid #eee!important;padding-bottom:5px!important}.advanced-settings-warning{font-size:12px!important;color:#ff4d4f!important;margin-bottom:10px!important;font-weight:700!important;padding:8px!important;background-color:#fff2f0!important;border-radius:4px!important;border:1px solid #ffccc7!important}.tutorial-link{font-size:12px!important;color:#1890ff!important;margin-left:8px!important;text-decoration:none!important;font-weight:400!important}.tutorial-link:hover{text-decoration:underline!important}.custom-selectors{display:flex!important;flex-direction:column!important;gap:8px!important}.selector-item{display:flex!important;align-items:center!important;gap:8px!important}.selector-item input{flex:1!important}.remove-selector{background-color:#ff4d4f!important;color:#fff!important;border:none!important;border-radius:50%!important;width:24px!important;height:24px!important;font-size:16px!important;line-height:1!important;cursor:pointer!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:0!important}.add-selector{margin-top:8px!important;background-color:#1890ff!important;color:#fff!important;border:none!important;border-radius:4px!important;padding:4px 12px!important;font-size:14px!important;cursor:pointer!important;align-self:flex-start!important}.add-selector:hover{background-color:#40a9ff!important}.remove-selector:hover{background-color:#ff7875!important}.domain-textarea{width:100%!important;border:1px solid #ddd!important;border-radius:4px!important;padding:8px!important;resize:vertical!important;font-family:monospace!important;font-size:14px!important}.reload-rules-button{display:inline-flex!important;align-items:center!important;justify-content:center!important;padding:6px 12px!important;height:34px!important;font-size:14px!important;border-radius:4px!important;border:1px solid #ddd!important;background-color:#f7f7f7!important;cursor:pointer!important;transition:all .3s!important;min-width:120px!important}.reload-rules-button:hover{background-color:#e7e7e7!important}.reload-rules-button.test-loading{background-color:#f5f5f5!important;position:relative!important;color:transparent!important}.reload-rules-button.test-loading:after{content:""!important;width:16px!important;height:16px!important;border:2px solid #666!important;border-top-color:transparent!important;border-radius:50%!important;position:absolute!important;left:50%!important;top:50%!important;margin-left:-8px!important;margin-top:-8px!important;animation:captcha-spin 1s linear infinite!important}.reload-rules-button.test-success{background-color:#eaf7ea!important;border-color:#c3e6c3!important;color:#2a862a!important}.reload-rules-button.test-error{background-color:#fce7e7!important;border-color:#f5c2c2!important;color:#d63030!important}.rules-management{display:flex!important;flex-direction:column!important;gap:10px!important}.rules-url-input{display:flex!important;flex-direction:column!important;gap:5px!important}.rules-url-input input{width:100%!important;padding:8px!important;border:1px solid #ddd!important;border-radius:4px!important;font-size:14px!important}.rules-url-input small{color:#666!important;font-size:12px!important}@media (max-width: 768px){.settings-nav-item{padding:10px!important}} `);
 
 (function (vue) {
   'use strict';
 
   const name = "CAPTCHA-automatic-recognition";
-  const version = "9.9.9";
+  const version = "1.0.1";
   const author = "knight";
   const description = "Automatically recognize the CAPTCHA on the webpage and fill it into the input box, click the recognition icon to trigger recognition.";
   const type = "module";
@@ -69,10 +62,9 @@
       return fn.apply(thisArg, arguments);
     };
   }
-
-  const {toString} = Object.prototype;
-  const {getPrototypeOf} = Object;
-  const {iterator, toStringTag} = Symbol;
+  const { toString } = Object.prototype;
+  const { getPrototypeOf } = Object;
+  const { iterator, toStringTag } = Symbol;
   const kindOf = /* @__PURE__ */ ((cache) => (thing) => {
     const str = toString.call(thing);
     return cache[str] || (cache[str] = str.slice(8, -1).toLowerCase());
@@ -82,7 +74,7 @@
     return (thing) => kindOf(thing) === type2;
   };
   const typeOfTest = (type2) => (thing) => typeof thing === type2;
-  const {isArray} = Array;
+  const { isArray } = Array;
   const isUndefined = typeOfTest("undefined");
   function isBuffer(val) {
     return val !== null && !isUndefined(val) && val.constructor !== null && !isUndefined(val.constructor) && isFunction(val.constructor.isBuffer) && val.constructor.isBuffer(val);
@@ -117,13 +109,12 @@
   const isFormData = (thing) => {
     let kind;
     return thing && (typeof FormData === "function" && thing instanceof FormData || isFunction(thing.append) && ((kind = kindOf(thing)) === "formdata" || // detect form-data instance
-        kind === "object" && isFunction(thing.toString) && thing.toString() === "[object FormData]"));
+    kind === "object" && isFunction(thing.toString) && thing.toString() === "[object FormData]"));
   };
   const isURLSearchParams = kindOfTest("URLSearchParams");
   const [isReadableStream, isRequest, isResponse, isHeaders] = ["ReadableStream", "Request", "Response", "Headers"].map(kindOfTest);
   const trim = (str) => str.trim ? str.trim() : str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
-
-  function forEach(obj, fn, {allOwnKeys = false} = {}) {
+  function forEach(obj, fn, { allOwnKeys = false } = {}) {
     if (obj === null || typeof obj === "undefined") {
       return;
     }
@@ -165,7 +156,7 @@
   })();
   const isContextDefined = (context) => !isUndefined(context) && context !== _global;
   function merge() {
-    const {caseless} = isContextDefined(this) && this || {};
+    const { caseless } = isContextDefined(this) && this || {};
     const result = {};
     const assignValue = (val, key) => {
       const targetKey = caseless && findKey(result, key) || key;
@@ -184,15 +175,14 @@
     }
     return result;
   }
-
-  const extend = (a, b, thisArg, {allOwnKeys} = {}) => {
+  const extend = (a, b, thisArg, { allOwnKeys } = {}) => {
     forEach(b, (val, key) => {
       if (thisArg && isFunction(val)) {
         a[key] = bind(val, thisArg);
       } else {
         a[key] = val;
       }
-    }, {allOwnKeys});
+    }, { allOwnKeys });
     return a;
   };
   const stripBOM = (content) => {
@@ -275,13 +265,13 @@
   const isHTMLForm = kindOfTest("HTMLFormElement");
   const toCamelCase = (str) => {
     return str.toLowerCase().replace(
-        /[-_\s]([a-z\d])(\w*)/g,
-        function replacer(m, p1, p2) {
-          return p1.toUpperCase() + p2;
-        }
+      /[-_\s]([a-z\d])(\w*)/g,
+      function replacer(m, p1, p2) {
+        return p1.toUpperCase() + p2;
+      }
     );
   };
-  const hasOwnProperty = (({hasOwnProperty: hasOwnProperty2}) => (obj, prop) => hasOwnProperty2.call(obj, prop))(Object.prototype);
+  const hasOwnProperty = (({ hasOwnProperty: hasOwnProperty2 }) => (obj, prop) => hasOwnProperty2.call(obj, prop))(Object.prototype);
   const isRegExp = kindOfTest("RegExp");
   const reduceDescriptors = (obj, reducer) => {
     const descriptors2 = Object.getOwnPropertyDescriptors(obj);
@@ -360,7 +350,7 @@
       return setImmediate;
     }
     return postMessageSupported ? ((token, callbacks) => {
-      _global.addEventListener("message", ({source, data}) => {
+      _global.addEventListener("message", ({ source, data }) => {
         if (source === _global && data === token) {
           callbacks.length && callbacks.shift()();
         }
@@ -371,8 +361,8 @@
       };
     })(`axios@${Math.random()}`, []) : (cb) => setTimeout(cb);
   })(
-      typeof setImmediate === "function",
-      isFunction(_global.postMessage)
+    typeof setImmediate === "function",
+    isFunction(_global.postMessage)
   );
   const asap = typeof queueMicrotask !== "undefined" ? queueMicrotask.bind(_global) : typeof process !== "undefined" && process.nextTick || _setImmediate;
   const isIterable = (thing) => thing != null && isFunction(thing[iterator]);
@@ -490,10 +480,10 @@
     "ERR_INVALID_URL"
     // eslint-disable-next-line func-names
   ].forEach((code) => {
-    descriptors[code] = {value: code};
+    descriptors[code] = { value: code };
   });
   Object.defineProperties(AxiosError, descriptors);
-  Object.defineProperty(prototype$1, "isAxiosError", {value: true});
+  Object.defineProperty(prototype$1, "isAxiosError", { value: true });
   AxiosError.from = (error, code, config, request, response, customProps) => {
     const axiosError = Object.create(prototype$1);
     utils$1.toFlatObject(error, axiosError, function filter2(obj) {
@@ -574,9 +564,9 @@
           key = removeBrackets(key);
           arr.forEach(function each(el, index) {
             !(utils$1.isUndefined(el) || el === null) && formData.append(
-                // eslint-disable-next-line no-nested-ternary
-                indexes === true ? renderKey([key], index, dots) : indexes === null ? key : key + "[]",
-                convertValue(el)
+              // eslint-disable-next-line no-nested-ternary
+              indexes === true ? renderKey([key], index, dots) : indexes === null ? key : key + "[]",
+              convertValue(el)
             );
           });
           return false;
@@ -602,11 +592,11 @@
       stack.push(value);
       utils$1.forEach(value, function each(el, key) {
         const result = !(utils$1.isUndefined(el) || el === null) && visitor.call(
-            formData,
-            el,
-            utils$1.isString(key) ? key.trim() : key,
-            path,
-            exposedHelpers
+          formData,
+          el,
+          utils$1.isString(key) ? key.trim() : key,
+          path,
+          exposedHelpers
         );
         if (result === true) {
           build(el, path ? path.concat(key) : [key]);
@@ -643,7 +633,7 @@
     this._pairs.push([name2, value]);
   };
   prototype.toString = function toString2(encoder) {
-    const _encode = encoder ? function (value) {
+    const _encode = encoder ? function(value) {
       return encoder.call(this, value, encode$1);
     } : encode$1;
     return this._pairs.map(function each(pair) {
@@ -762,7 +752,7 @@
   const hasStandardBrowserEnv = hasBrowserEnv && (!_navigator || ["ReactNative", "NativeScript", "NS"].indexOf(_navigator.product) < 0);
   const hasStandardBrowserWebWorkerEnv = (() => {
     return typeof WorkerGlobalScope !== "undefined" && // eslint-disable-next-line no-undef
-        self instanceof WorkerGlobalScope && typeof self.importScripts === "function";
+    self instanceof WorkerGlobalScope && typeof self.importScripts === "function";
   })();
   const origin = hasBrowserEnv && window.location.href || "http://localhost";
   const utils = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
@@ -772,14 +762,14 @@
     hasStandardBrowserWebWorkerEnv,
     navigator: _navigator,
     origin
-  }, Symbol.toStringTag, {value: "Module"}));
+  }, Symbol.toStringTag, { value: "Module" }));
   const platform = {
     ...utils,
     ...platform$1
   };
   function toURLEncodedForm(data, options) {
     return toFormData(data, new platform.classes.URLSearchParams(), Object.assign({
-      visitor: function (value, key, path, helpers) {
+      visitor: function(value, key, path, helpers) {
         if (platform.isNode && utils$1.isBuffer(value)) {
           this.append(key, value.toString("base64"));
           return false;
@@ -883,9 +873,9 @@
         if ((isFileList2 = utils$1.isFileList(data)) || contentType.indexOf("multipart/form-data") > -1) {
           const _FormData = this.env && this.env.FormData;
           return toFormData(
-              isFileList2 ? {"files[]": data} : data,
-              _FormData && new _FormData(),
-              this.formSerializer
+            isFileList2 ? { "files[]": data } : data,
+            _FormData && new _FormData(),
+            this.formSerializer
           );
         }
       }
@@ -1031,7 +1021,7 @@
     const accessorName = utils$1.toCamelCase(" " + header);
     ["get", "set", "has"].forEach((methodName) => {
       Object.defineProperty(obj, methodName + accessorName, {
-        value: function (arg1, arg2, arg3) {
+        value: function(arg1, arg2, arg3) {
           return this[methodName].call(this, header, arg1, arg2, arg3);
         },
         configurable: true
@@ -1174,28 +1164,23 @@
     getSetCookie() {
       return this.get("set-cookie") || [];
     }
-
     get [Symbol.toStringTag]() {
       return "AxiosHeaders";
     }
-
     static from(thing) {
       return thing instanceof this ? thing : new this(thing);
     }
-
     static concat(first, ...targets) {
       const computed = new this(first);
       targets.forEach((target) => computed.set(target));
       return computed;
     }
-
     static accessor(header) {
       const internals = this[$internals] = this[$internals] = {
         accessors: {}
       };
       const accessors = internals.accessors;
       const prototype2 = this.prototype;
-
       function defineAccessor(_header) {
         const lHeader = normalizeHeader(_header);
         if (!accessors[lHeader]) {
@@ -1203,13 +1188,12 @@
           accessors[lHeader] = true;
         }
       }
-
       utils$1.isArray(header) ? header.forEach(defineAccessor) : defineAccessor(header);
       return this;
     }
   }
   AxiosHeaders.accessor(["Content-Type", "Content-Length", "Accept", "Accept-Encoding", "User-Agent", "Authorization"]);
-  utils$1.reduceDescriptors(AxiosHeaders.prototype, ({value}, key) => {
+  utils$1.reduceDescriptors(AxiosHeaders.prototype, ({ value }, key) => {
     let mapped = key[0].toUpperCase() + key.slice(1);
     return {
       get: () => value,
@@ -1246,11 +1230,11 @@
       resolve(response);
     } else {
       reject(new AxiosError(
-          "Request failed with status code " + response.status,
-          [AxiosError.ERR_BAD_REQUEST, AxiosError.ERR_BAD_RESPONSE][Math.floor(response.status / 100) - 4],
-          response.config,
-          response.request,
-          response
+        "Request failed with status code " + response.status,
+        [AxiosError.ERR_BAD_REQUEST, AxiosError.ERR_BAD_RESPONSE][Math.floor(response.status / 100) - 4],
+        response.config,
+        response.request,
+        response
       ));
     }
   }
@@ -1360,39 +1344,39 @@
     url = new URL(url, platform.origin);
     return origin2.protocol === url.protocol && origin2.host === url.host && (isMSIE || origin2.port === url.port);
   })(
-      new URL(platform.origin),
-      platform.navigator && /(msie|trident)/i.test(platform.navigator.userAgent)
+    new URL(platform.origin),
+    platform.navigator && /(msie|trident)/i.test(platform.navigator.userAgent)
   ) : () => true;
   const cookies = platform.hasStandardBrowserEnv ? (
-      // Standard browser envs support document.cookie
-      {
-        write(name2, value, expires, path, domain, secure) {
-          const cookie = [name2 + "=" + encodeURIComponent(value)];
-          utils$1.isNumber(expires) && cookie.push("expires=" + new Date(expires).toGMTString());
-          utils$1.isString(path) && cookie.push("path=" + path);
-          utils$1.isString(domain) && cookie.push("domain=" + domain);
-          secure === true && cookie.push("secure");
-          document.cookie = cookie.join("; ");
-        },
-        read(name2) {
-          const match = document.cookie.match(new RegExp("(^|;\\s*)(" + name2 + ")=([^;]*)"));
-          return match ? decodeURIComponent(match[3]) : null;
-        },
-        remove(name2) {
-          this.write(name2, "", Date.now() - 864e5);
-        }
+    // Standard browser envs support document.cookie
+    {
+      write(name2, value, expires, path, domain, secure) {
+        const cookie = [name2 + "=" + encodeURIComponent(value)];
+        utils$1.isNumber(expires) && cookie.push("expires=" + new Date(expires).toGMTString());
+        utils$1.isString(path) && cookie.push("path=" + path);
+        utils$1.isString(domain) && cookie.push("domain=" + domain);
+        secure === true && cookie.push("secure");
+        document.cookie = cookie.join("; ");
+      },
+      read(name2) {
+        const match = document.cookie.match(new RegExp("(^|;\\s*)(" + name2 + ")=([^;]*)"));
+        return match ? decodeURIComponent(match[3]) : null;
+      },
+      remove(name2) {
+        this.write(name2, "", Date.now() - 864e5);
       }
+    }
   ) : (
-      // Non-standard browser env (web workers, react-native) lack needed support.
-      {
-        write() {
-        },
-        read() {
-          return null;
-        },
-        remove() {
-        }
+    // Non-standard browser env (web workers, react-native) lack needed support.
+    {
+      write() {
+      },
+      read() {
+        return null;
+      },
+      remove() {
       }
+    }
   );
   function isAbsoluteURL(url) {
     return /^([a-z][a-z\d+\-.]*:)?\/\//i.test(url);
@@ -1407,14 +1391,13 @@
     }
     return requestedURL;
   }
-
-  const headersToObject = (thing) => thing instanceof AxiosHeaders ? {...thing} : thing;
+  const headersToObject = (thing) => thing instanceof AxiosHeaders ? { ...thing } : thing;
   function mergeConfig(config1, config2) {
     config2 = config2 || {};
     const config = {};
     function getMergedValue(target, source, prop, caseless) {
       if (utils$1.isPlainObject(target) && utils$1.isPlainObject(source)) {
-        return utils$1.merge.call({caseless}, target, source);
+        return utils$1.merge.call({ caseless }, target, source);
       } else if (utils$1.isPlainObject(source)) {
         return utils$1.merge({}, source);
       } else if (utils$1.isArray(source)) {
@@ -1488,13 +1471,13 @@
   }
   const resolveConfig = (config) => {
     const newConfig = mergeConfig({}, config);
-    let {data, withXSRFToken, xsrfHeaderName, xsrfCookieName, headers, auth} = newConfig;
+    let { data, withXSRFToken, xsrfHeaderName, xsrfCookieName, headers, auth } = newConfig;
     newConfig.headers = headers = AxiosHeaders.from(headers);
     newConfig.url = buildURL(buildFullPath(newConfig.baseURL, newConfig.url, newConfig.allowAbsoluteUrls), config.params, config.paramsSerializer);
     if (auth) {
       headers.set(
-          "Authorization",
-          "Basic " + btoa((auth.username || "") + ":" + (auth.password ? unescape(encodeURIComponent(auth.password)) : ""))
+        "Authorization",
+        "Basic " + btoa((auth.username || "") + ":" + (auth.password ? unescape(encodeURIComponent(auth.password)) : ""))
       );
     }
     let contentType;
@@ -1518,12 +1501,12 @@
     return newConfig;
   };
   const isXHRAdapterSupported = typeof XMLHttpRequest !== "undefined";
-  const xhrAdapter = isXHRAdapterSupported && function (config) {
+  const xhrAdapter = isXHRAdapterSupported && function(config) {
     return new Promise(function dispatchXhrRequest(resolve, reject) {
       const _config = resolveConfig(config);
       let requestData = _config.data;
       const requestHeaders = AxiosHeaders.from(_config.headers).normalize();
-      let {responseType, onUploadProgress, onDownloadProgress} = _config;
+      let { responseType, onUploadProgress, onDownloadProgress } = _config;
       let onCanceled;
       let uploadThrottled, downloadThrottled;
       let flushUpload, flushDownload;
@@ -1541,7 +1524,7 @@
           return;
         }
         const responseHeaders = AxiosHeaders.from(
-            "getAllResponseHeaders" in request && request.getAllResponseHeaders()
+          "getAllResponseHeaders" in request && request.getAllResponseHeaders()
         );
         const responseData = !responseType || responseType === "text" || responseType === "json" ? request.responseText : request.response;
         const response = {
@@ -1592,10 +1575,10 @@
           timeoutErrorMessage = _config.timeoutErrorMessage;
         }
         reject(new AxiosError(
-            timeoutErrorMessage,
-            transitional2.clarifyTimeoutError ? AxiosError.ETIMEDOUT : AxiosError.ECONNABORTED,
-            config,
-            request
+          timeoutErrorMessage,
+          transitional2.clarifyTimeoutError ? AxiosError.ETIMEDOUT : AxiosError.ECONNABORTED,
+          config,
+          request
         ));
         request = null;
       };
@@ -1643,11 +1626,11 @@
     });
   };
   const composeSignals = (signals, timeout) => {
-    const {length} = signals = signals ? signals.filter(Boolean) : [];
+    const { length } = signals = signals ? signals.filter(Boolean) : [];
     if (timeout || length) {
       let controller = new AbortController();
       let aborted;
-      const onabort = function (reason) {
+      const onabort = function(reason) {
         if (!aborted) {
           aborted = true;
           unsubscribe();
@@ -1670,7 +1653,7 @@
         }
       };
       signals.forEach((signal2) => signal2.addEventListener("abort", onabort));
-      const {signal} = controller;
+      const { signal } = controller;
       signal.unsubscribe = () => utils$1.asap(unsubscribe);
       return signal;
     }
@@ -1701,8 +1684,8 @@
     }
     const reader = stream.getReader();
     try {
-      for (; ;) {
-        const {done, value} = await reader.read();
+      for (; ; ) {
+        const { done, value } = await reader.read();
         if (done) {
           break;
         }
@@ -1725,7 +1708,7 @@
     return new ReadableStream({
       async pull(controller) {
         try {
-          const {done: done2, value} = await iterator2.next();
+          const { done: done2, value } = await iterator2.next();
           if (done2) {
             _onFinish();
             controller.close();
@@ -1847,8 +1830,8 @@
         }
         if (_request.body) {
           const [onProgress, flush] = progressEventDecorator(
-              requestContentLength,
-              progressEventReducer(asyncDecorator(onUploadProgress))
+            requestContentLength,
+            progressEventReducer(asyncDecorator(onUploadProgress))
           );
           data = trackStream(_request.body, DEFAULT_CHUNK_SIZE, onProgress, flush);
         }
@@ -1875,15 +1858,15 @@
         });
         const responseContentLength = utils$1.toFiniteNumber(response.headers.get("content-length"));
         const [onProgress, flush] = onDownloadProgress && progressEventDecorator(
-            responseContentLength,
-            progressEventReducer(asyncDecorator(onDownloadProgress), true)
+          responseContentLength,
+          progressEventReducer(asyncDecorator(onDownloadProgress), true)
         ) || [];
         response = new Response(
-            trackStream(response.body, DEFAULT_CHUNK_SIZE, onProgress, () => {
-              flush && flush();
-              unsubscribe && unsubscribe();
-            }),
-            options
+          trackStream(response.body, DEFAULT_CHUNK_SIZE, onProgress, () => {
+            flush && flush();
+            unsubscribe && unsubscribe();
+          }),
+          options
         );
       }
       responseType = responseType || "text";
@@ -1903,10 +1886,10 @@
       unsubscribe && unsubscribe();
       if (err && err.name === "TypeError" && /Load failed|fetch/i.test(err.message)) {
         throw Object.assign(
-            new AxiosError("Network Error", AxiosError.ERR_NETWORK, config, request),
-            {
-              cause: err.cause || err
-            }
+          new AxiosError("Network Error", AxiosError.ERR_NETWORK, config, request),
+          {
+            cause: err.cause || err
+          }
         );
       }
       throw AxiosError.from(err, err && err.code, config, request);
@@ -1920,10 +1903,10 @@
   utils$1.forEach(knownAdapters, (fn, value) => {
     if (fn) {
       try {
-        Object.defineProperty(fn, "name", {value});
+        Object.defineProperty(fn, "name", { value });
       } catch (e) {
       }
-      Object.defineProperty(fn, "adapterName", {value});
+      Object.defineProperty(fn, "adapterName", { value });
     }
   });
   const renderReason = (reason) => `- ${reason}`;
@@ -1931,7 +1914,7 @@
   const adapters = {
     getAdapter: (adapters2) => {
       adapters2 = utils$1.isArray(adapters2) ? adapters2 : [adapters2];
-      const {length} = adapters2;
+      const { length } = adapters2;
       let nameOrAdapter;
       let adapter;
       const rejectedReasons = {};
@@ -1952,12 +1935,12 @@
       }
       if (!adapter) {
         const reasons = Object.entries(rejectedReasons).map(
-            ([id, state]) => `adapter ${id} ` + (state === false ? "is not supported by the environment" : "is not available in the build")
+          ([id, state]) => `adapter ${id} ` + (state === false ? "is not supported by the environment" : "is not available in the build")
         );
         let s = length ? reasons.length > 1 ? "since :\n" + reasons.map(renderReason).join("\n") : " " + renderReason(reasons[0]) : "as no adapter specified";
         throw new AxiosError(
-            `There is no suitable adapter to dispatch the request ` + s,
-            "ERR_NOT_SUPPORT"
+          `There is no suitable adapter to dispatch the request ` + s,
+          "ERR_NOT_SUPPORT"
         );
       }
       return adapter;
@@ -1976,8 +1959,8 @@
     throwIfCancellationRequested(config);
     config.headers = AxiosHeaders.from(config.headers);
     config.data = transformData.call(
-        config,
-        config.transformRequest
+      config,
+      config.transformRequest
     );
     if (["post", "put", "patch"].indexOf(config.method) !== -1) {
       config.headers.setContentType("application/x-www-form-urlencoded", false);
@@ -1986,9 +1969,9 @@
     return adapter(config).then(function onAdapterResolution(response) {
       throwIfCancellationRequested(config);
       response.data = transformData.call(
-          config,
-          config.transformResponse,
-          response
+        config,
+        config.transformResponse,
+        response
       );
       response.headers = AxiosHeaders.from(response.headers);
       return response;
@@ -1997,9 +1980,9 @@
         throwIfCancellationRequested(config);
         if (reason && reason.response) {
           reason.response.data = transformData.call(
-              config,
-              config.transformResponse,
-              reason.response
+            config,
+            config.transformResponse,
+            reason.response
           );
           reason.response.headers = AxiosHeaders.from(reason.response.headers);
         }
@@ -2022,17 +2005,17 @@
     return (value, opt, opts) => {
       if (validator2 === false) {
         throw new AxiosError(
-            formatMessage(opt, " has been removed" + (version2 ? " in " + version2 : "")),
-            AxiosError.ERR_DEPRECATED
+          formatMessage(opt, " has been removed" + (version2 ? " in " + version2 : "")),
+          AxiosError.ERR_DEPRECATED
         );
       }
       if (version2 && !deprecatedWarnings[opt]) {
         deprecatedWarnings[opt] = true;
         console.warn(
-            formatMessage(
-                opt,
-                " has been deprecated since v" + version2 + " and will be removed in the near future"
-            )
+          formatMessage(
+            opt,
+            " has been deprecated since v" + version2 + " and will be removed in the near future"
+          )
         );
       }
       return validator2 ? validator2(value, opt, opts) : true;
@@ -2115,7 +2098,7 @@
         config = configOrUrl || {};
       }
       config = mergeConfig(this.defaults, config);
-      const {transitional: transitional2, paramsSerializer, headers} = config;
+      const { transitional: transitional2, paramsSerializer, headers } = config;
       if (transitional2 !== void 0) {
         validator.assertOptions(transitional2, {
           silentJSONParsing: validators.transitional(validators.boolean),
@@ -2147,14 +2130,14 @@
       }, true);
       config.method = (config.method || this.defaults.method || "get").toLowerCase();
       let contextHeaders = headers && utils$1.merge(
-          headers.common,
-          headers[config.method]
+        headers.common,
+        headers[config.method]
       );
       headers && utils$1.forEach(
-          ["delete", "get", "head", "post", "put", "patch", "common"],
-          (method) => {
-            delete headers[method];
-          }
+        ["delete", "get", "head", "post", "put", "patch", "common"],
+        (method) => {
+          delete headers[method];
+        }
       );
       config.headers = AxiosHeaders.concat(contextHeaders, headers);
       const requestInterceptorChain = [];
@@ -2216,7 +2199,7 @@
     }
   }
   utils$1.forEach(["delete", "get", "head", "options"], function forEachMethodNoData(method) {
-    Axios.prototype[method] = function (url, config) {
+    Axios.prototype[method] = function(url, config) {
       return this.request(mergeConfig(config || {}, {
         method,
         url,
@@ -2320,7 +2303,6 @@
       controller.signal.unsubscribe = () => this.unsubscribe(abort);
       return controller.signal;
     }
-
     /**
      * Returns an object that contains a new `CancelToken` and a function that, when called,
      * cancels the `CancelToken`.
@@ -2415,8 +2397,8 @@
   function createInstance(defaultConfig) {
     const context = new Axios(defaultConfig);
     const instance = bind(Axios.prototype.request, context);
-    utils$1.extend(instance, Axios.prototype, context, {allOwnKeys: true});
-    utils$1.extend(instance, context, null, {allOwnKeys: true});
+    utils$1.extend(instance, Axios.prototype, context, { allOwnKeys: true });
+    utils$1.extend(instance, context, null, { allOwnKeys: true });
     instance.create = function create(instanceConfig) {
       return createInstance(mergeConfig(defaultConfig, instanceConfig));
     };
@@ -2530,8 +2512,8 @@
         // 可能的值：'', 'loading', 'success', 'error'
         // 设置项
         settings: {
-          apiType: "ddddocr",
-          // openai, gemini, qwen, ddddocr
+          apiType: "openai",
+          // openai, gemini, qwen
           // OpenAI 设置
           openaiKey: "",
           openaiApiUrl: "",
@@ -2643,7 +2625,7 @@
             const savedSettings = GM_getValue("captchaSettings");
             if (savedSettings) {
               const parsedSettings = JSON.parse(savedSettings);
-              this.settings = {...this.settings, ...parsedSettings};
+              this.settings = { ...this.settings, ...parsedSettings };
             }
             const savedRules = GM_getValue("captchaRules");
             if (savedRules) {
@@ -2655,7 +2637,7 @@
             const localSettings = localStorage.getItem("captchaSettings");
             if (localSettings) {
               const parsedSettings = JSON.parse(localSettings);
-              this.settings = {...this.settings, ...parsedSettings};
+              this.settings = { ...this.settings, ...parsedSettings };
             }
             const localRules = localStorage.getItem("captchaRules");
             if (localRules) {
@@ -3013,10 +2995,10 @@
               {
                 role: "user",
                 content: [
-                  {type: "text", text: prompt},
+                  { type: "text", text: prompt },
                   {
                     type: "image_url",
-                    image_url: {url: `data:image/png;base64,${base64Image}`}
+                    image_url: { url: `data:image/png;base64,${base64Image}` }
                   }
                 ]
               }
@@ -3093,13 +3075,13 @@
           let captchaSelectors = [...this.config.captchaSelectors];
           if (Array.isArray(this.settings.customCaptchaSelectors)) {
             captchaSelectors = captchaSelectors.concat(
-                this.settings.customCaptchaSelectors.filter((s) => s && s.trim())
+              this.settings.customCaptchaSelectors.filter((s) => s && s.trim())
             );
           }
           let inputSelectors = [...this.config.inputSelectors];
           if (Array.isArray(this.settings.customInputSelectors)) {
             inputSelectors = inputSelectors.concat(
-                this.settings.customInputSelectors.filter((s) => s && s.trim())
+              this.settings.customInputSelectors.filter((s) => s && s.trim())
             );
           }
           if (Array.isArray(this.rules) && this.rules.length > 0) {
@@ -3113,8 +3095,8 @@
               } else if (rule.url_pattern.startsWith("/") && rule.url_pattern.endsWith("/")) {
                 try {
                   const regexPattern = rule.url_pattern.substring(
-                      1,
-                      rule.url_pattern.length - 1
+                    1,
+                    rule.url_pattern.length - 1
                   );
                   const regex = new RegExp(regexPattern);
                   isUrlMatch = regex.test(currentUrl);
@@ -3152,13 +3134,13 @@
                     return;
                   }
                   if (captchaElement.nextElementSibling && captchaElement.nextElementSibling.classList.contains(
-                      "captcha-recognition-icon"
+                    "captcha-recognition-icon"
                   )) {
                     return;
                   }
                   let inputField = this.findInputFieldForCaptcha(
-                      captchaElement,
-                      inputSelectors
+                    captchaElement,
+                    inputSelectors
                   );
                   this.addRecognitionIcon(captchaElement, inputField);
                   elements.push({
@@ -3172,11 +3154,11 @@
             });
             if (elements.length > 0) {
               this.showToast(
-                  `检测到 ${elements.length} 个验证码，点击识别图标开始识别`,
-                  "info"
+                `检测到 ${elements.length} 个验证码，点击识别图标开始识别`,
+                "info"
               );
               if (this.settings.autoRecognize) {
-                elements.forEach(({captchaImg, inputField}) => {
+                elements.forEach(({ captchaImg, inputField }) => {
                   let icon = captchaImg.nextElementSibling;
                   if (icon && icon.classList.contains("captcha-recognition-icon")) {
                     const base64Result = this.imageToBase64(captchaImg);
@@ -3213,7 +3195,7 @@
         }
         try {
           const elements = this.findCaptchaElements();
-          elements.forEach(({captchaImg, inputField}) => {
+          elements.forEach(({ captchaImg, inputField }) => {
             const existingIcon = captchaImg.nextElementSibling;
             if (existingIcon && existingIcon.classList.contains("captcha-recognition-icon")) {
               return;
@@ -3314,8 +3296,8 @@
             }
           }
           inputField.value = text;
-          inputField.dispatchEvent(new Event("input", {bubbles: true}));
-          inputField.dispatchEvent(new Event("change", {bubbles: true}));
+          inputField.dispatchEvent(new Event("input", { bubbles: true }));
+          inputField.dispatchEvent(new Event("change", { bubbles: true }));
           if (this.settings.copyToClipboard) {
             try {
               await navigator.clipboard.writeText(text);
@@ -3390,10 +3372,10 @@
               setTimeout(() => {
                 const elements = this.findCaptchaElements();
                 const newElements = elements.filter(
-                    ({captchaImg}) => newCaptchaElements.includes(captchaImg)
+                  ({ captchaImg }) => newCaptchaElements.includes(captchaImg)
                 );
                 const unrecognizableImages = [];
-                newElements.forEach(({captchaImg}) => {
+                newElements.forEach(({ captchaImg }) => {
                   const base64Result = this.imageToBase64(captchaImg);
                   if (!base64Result.success) {
                     unrecognizableImages.push({
@@ -3404,16 +3386,16 @@
                 });
                 if (unrecognizableImages.length > 0) {
                   this.showToast(
-                      `检测到 ${unrecognizableImages.length} 个新验证码图片无法识别：${unrecognizableImages[0].message}`,
-                      "error"
+                    `检测到 ${unrecognizableImages.length} 个新验证码图片无法识别：${unrecognizableImages[0].message}`,
+                    "error"
                   );
                 }
-                const recognizableElements = newElements.filter(({captchaImg}) => {
+                const recognizableElements = newElements.filter(({ captchaImg }) => {
                   const base64Result = this.imageToBase64(captchaImg);
                   return base64Result.success;
                 });
                 if (recognizableElements.length > 0) {
-                  recognizableElements.forEach(({captchaImg, inputField}) => {
+                  recognizableElements.forEach(({ captchaImg, inputField }) => {
                     let icon;
                     const existingIcon = captchaImg.nextElementSibling;
                     if (existingIcon && existingIcon.classList.contains("captcha-recognition-icon")) {
@@ -3432,8 +3414,8 @@
                   });
                 } else if (newElements.length > 0) {
                   this.showToast(
-                      `检测到 ${newElements.length} 个新验证码，但均无法自动识别`,
-                      "error"
+                    `检测到 ${newElements.length} 个新验证码，但均无法自动识别`,
+                    "error"
                   );
                 }
               }, 500);
@@ -3476,7 +3458,7 @@
             const elements = this.findCaptchaElements();
             if (elements.length > 0) {
               const unrecognizableImages = [];
-              elements.forEach(({captchaImg}) => {
+              elements.forEach(({ captchaImg }) => {
                 const base64Result = this.imageToBase64(captchaImg);
                 if (!base64Result.success) {
                   unrecognizableImages.push({
@@ -3487,24 +3469,24 @@
               });
               if (unrecognizableImages.length > 0) {
                 console.warn(
-                    `${unrecognizableImages.length} 个验证码图片无法识别：${unrecognizableImages[0].message}`
+                  `${unrecognizableImages.length} 个验证码图片无法识别：${unrecognizableImages[0].message}`
                 );
                 this.showToast(
-                    `检测到 ${unrecognizableImages.length} 个验证码图片无法识别：${unrecognizableImages[0].message}`,
-                    "error"
+                  `检测到 ${unrecognizableImages.length} 个验证码图片无法识别：${unrecognizableImages[0].message}`,
+                  "error"
                 );
               }
               if (this.settings.autoRecognize) {
-                const recognizableElements = elements.filter(({captchaImg}) => {
+                const recognizableElements = elements.filter(({ captchaImg }) => {
                   const base64Result = this.imageToBase64(captchaImg);
                   return base64Result.success;
                 });
                 if (recognizableElements.length > 0) {
                   this.showToast(
-                      `检测到 ${recognizableElements.length} 个可识别的验证码，正在自动识别...`,
-                      "info"
+                    `检测到 ${recognizableElements.length} 个可识别的验证码，正在自动识别...`,
+                    "info"
                   );
-                  recognizableElements.forEach(({captchaImg, inputField}) => {
+                  recognizableElements.forEach(({ captchaImg, inputField }) => {
                     let icon;
                     const existingIcon = captchaImg.nextElementSibling;
                     if (existingIcon && existingIcon.classList.contains("captcha-recognition-icon")) {
@@ -3524,22 +3506,22 @@
                 } else if (elements.length > 0) {
                   console.warn(`检测到 ${elements.length} 个验证码，但均无法自动识别`);
                   this.showToast(
-                      `检测到 ${elements.length} 个验证码，但均无法自动识别`,
-                      "error"
+                    `检测到 ${elements.length} 个验证码，但均无法自动识别`,
+                    "error"
                   );
                 }
               } else {
                 this.showToast(
-                    `检测到 ${elements.length} 个验证码，点击识别图标开始识别`,
-                    "info"
+                  `检测到 ${elements.length} 个验证码，点击识别图标开始识别`,
+                  "info"
                 );
               }
             }
           } catch (error) {
             console.error("初始化验证码识别功能失败:", error);
             this.showToast(
-                `初始化验证码识别功能失败: ${error.message || "未知错误"}`,
-                "error"
+              `初始化验证码识别功能失败: ${error.message || "未知错误"}`,
+              "error"
             );
           }
         };
@@ -3573,7 +3555,7 @@
                   } catch (e) {
                     responseData = response.response || response.responseText;
                   }
-                  resolve({data: responseData});
+                  resolve({ data: responseData });
                 } else {
                   reject(new Error(`请求失败，状态码: ${response.status}`));
                 }
@@ -3584,7 +3566,7 @@
             });
           });
         } else {
-          const safeHeaders = {...config.headers};
+          const safeHeaders = { ...config.headers };
           const unsafeHeaders = ["Host", "Origin", "Referer", "Cookie"];
           unsafeHeaders.forEach((header) => {
             if (safeHeaders[header]) {
@@ -3895,13 +3877,13 @@
         let captchaSelectors = [...this.config.captchaSelectors];
         if (Array.isArray(this.settings.customCaptchaSelectors)) {
           captchaSelectors = captchaSelectors.concat(
-              this.settings.customCaptchaSelectors.filter((s) => s && s.trim())
+            this.settings.customCaptchaSelectors.filter((s) => s && s.trim())
           );
         }
         let inputSelectors = [...this.config.inputSelectors];
         if (Array.isArray(this.settings.customInputSelectors)) {
           inputSelectors = inputSelectors.concat(
-              this.settings.customInputSelectors.filter((s) => s && s.trim())
+            this.settings.customInputSelectors.filter((s) => s && s.trim())
           );
         }
         const currentUrl = window.location.href;
@@ -3916,8 +3898,8 @@
             } else if (rule.url_pattern.startsWith("/") && rule.url_pattern.endsWith("/")) {
               try {
                 const regexPattern = rule.url_pattern.substring(
-                    1,
-                    rule.url_pattern.length - 1
+                  1,
+                  rule.url_pattern.length - 1
                 );
                 const regex = new RegExp(regexPattern);
                 isUrlMatch = regex.test(currentUrl);
@@ -4005,8 +3987,8 @@
             } else if (rule.url_pattern.startsWith("/") && rule.url_pattern.endsWith("/")) {
               try {
                 const regexPattern = rule.url_pattern.substring(
-                    1,
-                    rule.url_pattern.length - 1
+                  1,
+                  rule.url_pattern.length - 1
                 );
                 const regex = new RegExp(regexPattern);
                 isUrlMatch = regex.test(currentUrl);
@@ -4181,7 +4163,7 @@
     created() {
       try {
         if (window.location.host == "nportal.ntut.edu.tw") {
-          const observer = new MutationObserver(function (mutations) {
+          const observer = new MutationObserver(function(mutations) {
             const authcodeElement = document.querySelector(".authcode.co");
             if (authcodeElement) {
               const captchaIcon = document.querySelector(".captcha-recognition-icon");
@@ -4192,7 +4174,7 @@
               }
             }
           });
-          observer.observe(document.body, {childList: true, subtree: true});
+          observer.observe(document.body, { childList: true, subtree: true });
         }
         if (window.location.host == "www.luogu.com.cn") {
           const styleluogu = document.createElement("style");
@@ -4202,28 +4184,28 @@
           }
         `;
           document.head.appendChild(styleluogu);
-          const observer = new MutationObserver(function (mutations) {
+          const observer = new MutationObserver(function(mutations) {
             const authcodeElement = document.querySelector(".l-form-layout .img");
             if (authcodeElement) {
               const captchaIcon = document.querySelector(".captcha-recognition-icon");
               if (captchaIcon) {
                 captchaIcon.parentNode.removeChild(captchaIcon);
                 authcodeElement.parentNode.insertBefore(
-                    captchaIcon,
-                    authcodeElement.nextSibling
+                  captchaIcon,
+                  authcodeElement.nextSibling
                 );
                 observer.disconnect();
               }
             }
           });
-          observer.observe(document.body, {childList: true, subtree: true});
+          observer.observe(document.body, { childList: true, subtree: true });
         }
       } catch (error) {
         console.error("验证码识别插件创建阶段出错:", error);
       }
     }
   };
-  const _hoisted_1 = {class: "captcha-recognition-container"};
+  const _hoisted_1 = { class: "captcha-recognition-container" };
   const _hoisted_2 = /* @__PURE__ */ vue.createElementVNode("svg", {
     xmlns: "http://www.w3.org/2000/svg",
     viewBox: "0 0 24 24",
@@ -4242,127 +4224,127 @@
     key: 1,
     class: "captcha-settings-modal"
   };
-  const _hoisted_5 = {class: "captcha-settings-content"};
-  const _hoisted_6 = {class: "settings-nav"};
-  const _hoisted_7 = {class: "settings-content"};
+  const _hoisted_5 = { class: "captcha-settings-content" };
+  const _hoisted_6 = { class: "settings-nav" };
+  const _hoisted_7 = { class: "settings-content" };
   const _hoisted_8 = {
     key: 0,
     class: "settings-content-tab"
   };
-  const _hoisted_9 = {class: "settings-card"};
-  const _hoisted_10 = {class: "settings-card-title"};
+  const _hoisted_9 = { class: "settings-card" };
+  const _hoisted_10 = { class: "settings-card-title" };
   const _hoisted_11 = /* @__PURE__ */ vue.createElementVNode("span", null, "AI服务商设置", -1);
-  const _hoisted_12 = {class: "api-type"};
-  const _hoisted_13 = {class: "captcha-settings-item"};
+  const _hoisted_12 = { class: "api-type" };
+  const _hoisted_13 = { class: "captcha-settings-item" };
   const _hoisted_14 = /* @__PURE__ */ vue.createElementVNode("label", null, "API 类型：", -1);
-  const _hoisted_15 = /* @__PURE__ */ vue.createElementVNode("option", {value: "openai"}, "OpenAI", -1);
-  const _hoisted_16 = /* @__PURE__ */ vue.createElementVNode("option", {value: "gemini"}, "Google Gemini", -1);
-  const _hoisted_17 = /* @__PURE__ */ vue.createElementVNode("option", {value: "qwen"}, "阿里云通义千问", -1);
-  const _hoisted_18 = /* @__PURE__ */ vue.createElementVNode("option", {value: "ddddocr"}, "ddddocr", -1);
+  const _hoisted_15 = /* @__PURE__ */ vue.createElementVNode("option", { value: "openai" }, "OpenAI", -1);
+  const _hoisted_16 = /* @__PURE__ */ vue.createElementVNode("option", { value: "gemini" }, "Google Gemini", -1);
+  const _hoisted_17 = /* @__PURE__ */ vue.createElementVNode("option", { value: "qwen" }, "阿里云通义千问", -1);
+  const _hoisted_18 = /* @__PURE__ */ vue.createElementVNode("option", { value: "ddddocr" }, "ddddocr", -1);
   const _hoisted_19 = [
     _hoisted_15,
     _hoisted_16,
     _hoisted_17,
     _hoisted_18
   ];
-  const _hoisted_20 = {key: 0};
-  const _hoisted_21 = {class: "captcha-settings-item"};
+  const _hoisted_20 = { key: 0 };
+  const _hoisted_21 = { class: "captcha-settings-item" };
   const _hoisted_22 = /* @__PURE__ */ vue.createElementVNode("label", null, "OpenAI API Key:", -1);
-  const _hoisted_23 = {class: "input-with-button"};
-  const _hoisted_24 = {key: 0};
-  const _hoisted_25 = {key: 1};
-  const _hoisted_26 = {key: 2};
-  const _hoisted_27 = {key: 3};
-  const _hoisted_28 = {class: "captcha-settings-item"};
+  const _hoisted_23 = { class: "input-with-button" };
+  const _hoisted_24 = { key: 0 };
+  const _hoisted_25 = { key: 1 };
+  const _hoisted_26 = { key: 2 };
+  const _hoisted_27 = { key: 3 };
+  const _hoisted_28 = { class: "captcha-settings-item" };
   const _hoisted_29 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
   const _hoisted_30 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
-  const _hoisted_31 = {class: "captcha-settings-item"};
+  const _hoisted_31 = { class: "captcha-settings-item" };
   const _hoisted_32 = /* @__PURE__ */ vue.createElementVNode("label", null, "模型 (可选):", -1);
   const _hoisted_33 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认模型", -1);
-  const _hoisted_34 = {class: "captcha-settings-item"};
+  const _hoisted_34 = { class: "captcha-settings-item" };
   const _hoisted_35 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义提示词 (可选):", -1);
-  const _hoisted_36 = {class: "textarea-with-button"};
+  const _hoisted_36 = { class: "textarea-with-button" };
   const _hoisted_37 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认提示词", -1);
-  const _hoisted_38 = {key: 1};
-  const _hoisted_39 = {class: "captcha-settings-item"};
+  const _hoisted_38 = { key: 1 };
+  const _hoisted_39 = { class: "captcha-settings-item" };
   const _hoisted_40 = /* @__PURE__ */ vue.createElementVNode("label", null, "Google Gemini API Key:", -1);
-  const _hoisted_41 = {class: "input-with-button"};
-  const _hoisted_42 = {key: 0};
-  const _hoisted_43 = {key: 1};
-  const _hoisted_44 = {key: 2};
-  const _hoisted_45 = {key: 3};
-  const _hoisted_46 = {class: "captcha-settings-item"};
+  const _hoisted_41 = { class: "input-with-button" };
+  const _hoisted_42 = { key: 0 };
+  const _hoisted_43 = { key: 1 };
+  const _hoisted_44 = { key: 2 };
+  const _hoisted_45 = { key: 3 };
+  const _hoisted_46 = { class: "captcha-settings-item" };
   const _hoisted_47 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
   const _hoisted_48 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
-  const _hoisted_49 = {class: "captcha-settings-item"};
+  const _hoisted_49 = { class: "captcha-settings-item" };
   const _hoisted_50 = /* @__PURE__ */ vue.createElementVNode("label", null, "模型 (可选):", -1);
   const _hoisted_51 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认模型", -1);
-  const _hoisted_52 = {class: "captcha-settings-item"};
+  const _hoisted_52 = { class: "captcha-settings-item" };
   const _hoisted_53 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义提示词 (可选):", -1);
-  const _hoisted_54 = {class: "textarea-with-button"};
+  const _hoisted_54 = { class: "textarea-with-button" };
   const _hoisted_55 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认提示词", -1);
-  const _hoisted_56 = {key: 2};
-  const _hoisted_57 = {class: "captcha-settings-item"};
+  const _hoisted_56 = { key: 2 };
+  const _hoisted_57 = { class: "captcha-settings-item" };
   const _hoisted_58 = /* @__PURE__ */ vue.createElementVNode("label", null, "阿里云通义千问 API Key:", -1);
-  const _hoisted_59 = {class: "input-with-button"};
-  const _hoisted_60 = {key: 0};
-  const _hoisted_61 = {key: 1};
-  const _hoisted_62 = {key: 2};
-  const _hoisted_63 = {key: 3};
-  const _hoisted_64 = {class: "captcha-settings-item"};
+  const _hoisted_59 = { class: "input-with-button" };
+  const _hoisted_60 = { key: 0 };
+  const _hoisted_61 = { key: 1 };
+  const _hoisted_62 = { key: 2 };
+  const _hoisted_63 = { key: 3 };
+  const _hoisted_64 = { class: "captcha-settings-item" };
   const _hoisted_65 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
   const _hoisted_66 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
-  const _hoisted_67 = {class: "captcha-settings-item"};
+  const _hoisted_67 = { class: "captcha-settings-item" };
   const _hoisted_68 = /* @__PURE__ */ vue.createElementVNode("label", null, "模型 (可选):", -1);
   const _hoisted_69 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认模型", -1);
-  const _hoisted_70 = {class: "captcha-settings-item"};
+  const _hoisted_70 = { class: "captcha-settings-item" };
   const _hoisted_71 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义提示词 (可选):", -1);
-  const _hoisted_72 = {class: "textarea-with-button"};
+  const _hoisted_72 = { class: "textarea-with-button" };
   const _hoisted_73 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认提示词", -1);
-  const _hoisted_74 = {key: 3};
-  const _hoisted_75 = {class: "captcha-settings-item"};
-  const _hoisted_76 = {key: 0};
-  const _hoisted_77 = {key: 1};
-  const _hoisted_78 = {key: 2};
-  const _hoisted_79 = {key: 3};
-  const _hoisted_80 = {class: "captcha-settings-item"};
+  const _hoisted_74 = { key: 3 };
+  const _hoisted_75 = { class: "captcha-settings-item" };
+  const _hoisted_76 = { key: 0 };
+  const _hoisted_77 = { key: 1 };
+  const _hoisted_78 = { key: 2 };
+  const _hoisted_79 = { key: 3 };
+  const _hoisted_80 = { class: "captcha-settings-item" };
   const _hoisted_81 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
   const _hoisted_82 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
   const _hoisted_83 = {
     key: 1,
     class: "settings-content-tab"
   };
-  const _hoisted_84 = {class: "settings-card"};
-  const _hoisted_85 = /* @__PURE__ */ vue.createElementVNode("div", {class: "settings-card-title"}, [
+  const _hoisted_84 = { class: "settings-card" };
+  const _hoisted_85 = /* @__PURE__ */ vue.createElementVNode("div", { class: "settings-card-title" }, [
     /* @__PURE__ */ vue.createElementVNode("span", null, "功能设置")
   ], -1);
-  const _hoisted_86 = {class: "captcha-settings-item"};
-  const _hoisted_87 = {style: {"display": "flex", "align-items": "center"}};
+  const _hoisted_86 = { class: "captcha-settings-item" };
+  const _hoisted_87 = { style: { "display": "flex", "align-items": "center" } };
   const _hoisted_88 = /* @__PURE__ */ vue.createElementVNode("label", {
     for: "autoRecognize",
-    style: {"margin-bottom": "0"}
+    style: { "margin-bottom": "0" }
   }, "验证码图片变化时自动识别", -1);
-  const _hoisted_89 = {class: "captcha-settings-item"};
-  const _hoisted_90 = {style: {"display": "flex", "align-items": "center"}};
+  const _hoisted_89 = { class: "captcha-settings-item" };
+  const _hoisted_90 = { style: { "display": "flex", "align-items": "center" } };
   const _hoisted_91 = /* @__PURE__ */ vue.createElementVNode("label", {
     for: "copyToClipboard",
-    style: {"margin-bottom": "0"}
+    style: { "margin-bottom": "0" }
   }, "自动复制到剪贴板", -1);
-  const _hoisted_92 = {class: "captcha-settings-item"};
-  const _hoisted_93 = {style: {"display": "flex", "align-items": "center"}};
+  const _hoisted_92 = { class: "captcha-settings-item" };
+  const _hoisted_93 = { style: { "display": "flex", "align-items": "center" } };
   const _hoisted_94 = /* @__PURE__ */ vue.createElementVNode("label", {
     for: "showNotification",
-    style: {"margin-bottom": "0"}
+    style: { "margin-bottom": "0" }
   }, "显示右上角通知提示", -1);
   const _hoisted_95 = {
     key: 2,
     class: "settings-content-tab"
   };
-  const _hoisted_96 = {class: "settings-card"};
-  const _hoisted_97 = /* @__PURE__ */ vue.createElementVNode("div", {class: "settings-card-title"}, [
+  const _hoisted_96 = { class: "settings-card" };
+  const _hoisted_97 = /* @__PURE__ */ vue.createElementVNode("div", { class: "settings-card-title" }, [
     /* @__PURE__ */ vue.createElementVNode("span", null, "禁用域名列表")
   ], -1);
-  const _hoisted_98 = {class: "captcha-settings-item"};
+  const _hoisted_98 = { class: "captcha-settings-item" };
   const _hoisted_99 = /* @__PURE__ */ vue.createElementVNode("small", null, [
     /* @__PURE__ */ vue.createTextVNode(" 在这些域名下将不启用验证码识别功能 "),
     /* @__PURE__ */ vue.createElementVNode("br"),
@@ -4372,8 +4354,8 @@
     key: 3,
     class: "settings-content-tab"
   };
-  const _hoisted_101 = {class: "settings-card"};
-  const _hoisted_102 = /* @__PURE__ */ vue.createElementVNode("div", {class: "settings-card-title"}, [
+  const _hoisted_101 = { class: "settings-card" };
+  const _hoisted_102 = /* @__PURE__ */ vue.createElementVNode("div", { class: "settings-card-title" }, [
     /* @__PURE__ */ vue.createElementVNode("span", null, [
       /* @__PURE__ */ vue.createTextVNode("高级设置 "),
       /* @__PURE__ */ vue.createElementVNode("a", {
@@ -4383,28 +4365,28 @@
       }, "教程")
     ])
   ], -1);
-  const _hoisted_103 = /* @__PURE__ */ vue.createElementVNode("div", {class: "advanced-settings-warning"}, " ⚠️ 警告：如果您不了解CSS选择器，请不要修改这些设置，可能导致识别功能失效 ", -1);
-  const _hoisted_104 = {class: "captcha-settings-item"};
+  const _hoisted_103 = /* @__PURE__ */ vue.createElementVNode("div", { class: "advanced-settings-warning" }, " ⚠️ 警告：如果您不了解CSS选择器，请不要修改这些设置，可能导致识别功能失效 ", -1);
+  const _hoisted_104 = { class: "captcha-settings-item" };
   const _hoisted_105 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义验证码图片选择器：", -1);
-  const _hoisted_106 = {class: "custom-selectors"};
+  const _hoisted_106 = { class: "custom-selectors" };
   const _hoisted_107 = ["onUpdate:modelValue"];
   const _hoisted_108 = ["onClick"];
-  const _hoisted_109 = {class: "captcha-settings-item"};
+  const _hoisted_109 = { class: "captcha-settings-item" };
   const _hoisted_110 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义输入框选择器：", -1);
-  const _hoisted_111 = {class: "custom-selectors"};
+  const _hoisted_111 = { class: "custom-selectors" };
   const _hoisted_112 = ["onUpdate:modelValue"];
   const _hoisted_113 = ["onClick"];
-  const _hoisted_114 = {class: "captcha-settings-item"};
+  const _hoisted_114 = { class: "captcha-settings-item" };
   const _hoisted_115 = /* @__PURE__ */ vue.createElementVNode("label", null, "验证码规则管理：", -1);
-  const _hoisted_116 = {class: "rules-management"};
-  const _hoisted_117 = {class: "rules-url-input"};
+  const _hoisted_116 = { class: "rules-management" };
+  const _hoisted_117 = { class: "rules-url-input" };
   const _hoisted_118 = /* @__PURE__ */ vue.createElementVNode("small", null, "规则文件URL，留空则使用默认URL：https://ghfast.top/https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json", -1);
-  const _hoisted_119 = {key: 0};
-  const _hoisted_120 = {key: 1};
-  const _hoisted_121 = {key: 2};
-  const _hoisted_122 = {key: 3};
+  const _hoisted_119 = { key: 0 };
+  const _hoisted_120 = { key: 1 };
+  const _hoisted_121 = { key: 2 };
+  const _hoisted_122 = { key: 3 };
   const _hoisted_123 = /* @__PURE__ */ vue.createElementVNode("small", null, "从远程加载最新的验证码识别规则", -1);
-  const _hoisted_124 = {class: "captcha-settings-buttons"};
+  const _hoisted_124 = { class: "captcha-settings-buttons" };
   function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     return vue.openBlock(), vue.createElementBlock("div", _hoisted_1, [
       $data.process.env.NODE_ENV === "development" && !$data.showSettings ? (vue.openBlock(), vue.createElementBlock("div", {
@@ -4420,19 +4402,19 @@
           ]),
           vue.createElementVNode("div", _hoisted_6, [
             vue.createElementVNode("div", {
-              class: vue.normalizeClass(["settings-nav-item", {active: $data.activeSettingTab === "ai"}]),
+              class: vue.normalizeClass(["settings-nav-item", { active: $data.activeSettingTab === "ai" }]),
               onClick: _cache[1] || (_cache[1] = ($event) => $data.activeSettingTab = "ai")
             }, " AI服务商 ", 2),
             vue.createElementVNode("div", {
-              class: vue.normalizeClass(["settings-nav-item", {active: $data.activeSettingTab === "function"}]),
+              class: vue.normalizeClass(["settings-nav-item", { active: $data.activeSettingTab === "function" }]),
               onClick: _cache[2] || (_cache[2] = ($event) => $data.activeSettingTab = "function")
             }, " 功能设置 ", 2),
             vue.createElementVNode("div", {
-              class: vue.normalizeClass(["settings-nav-item", {active: $data.activeSettingTab === "domain"}]),
+              class: vue.normalizeClass(["settings-nav-item", { active: $data.activeSettingTab === "domain" }]),
               onClick: _cache[3] || (_cache[3] = ($event) => $data.activeSettingTab = "domain")
             }, " 禁用域名 ", 2),
             vue.createElementVNode("div", {
-              class: vue.normalizeClass(["settings-nav-item", {active: $data.activeSettingTab === "advanced"}]),
+              class: vue.normalizeClass(["settings-nav-item", { active: $data.activeSettingTab === "advanced" }]),
               onClick: _cache[4] || (_cache[4] = ($event) => $data.activeSettingTab = "advanced")
             }, " 高级设置 ", 2)
           ]),
@@ -4683,7 +4665,7 @@
                       type: "checkbox",
                       "onUpdate:modelValue": _cache[26] || (_cache[26] = ($event) => $data.settings.autoRecognize = $event),
                       id: "autoRecognize",
-                      style: {"width": "auto", "margin-right": "8px !important"}
+                      style: { "width": "auto", "margin-right": "8px !important" }
                     }, null, 512), [
                       [vue.vModelCheckbox, $data.settings.autoRecognize]
                     ]),
@@ -4696,7 +4678,7 @@
                       type: "checkbox",
                       "onUpdate:modelValue": _cache[27] || (_cache[27] = ($event) => $data.settings.copyToClipboard = $event),
                       id: "copyToClipboard",
-                      style: {"width": "auto", "margin-right": "8px !important"}
+                      style: { "width": "auto", "margin-right": "8px !important" }
                     }, null, 512), [
                       [vue.vModelCheckbox, $data.settings.copyToClipboard]
                     ]),
@@ -4709,7 +4691,7 @@
                       type: "checkbox",
                       "onUpdate:modelValue": _cache[28] || (_cache[28] = ($event) => $data.settings.showNotification = $event),
                       id: "showNotification",
-                      style: {"width": "auto", "margin-right": "8px !important"}
+                      style: { "width": "auto", "margin-right": "8px !important" }
                     }, null, 512), [
                       [vue.vModelCheckbox, $data.settings.showNotification]
                     ]),
@@ -4724,7 +4706,7 @@
                 vue.createElementVNode("div", _hoisted_98, [
                   vue.withDirectives(vue.createElementVNode("textarea", {
                     "onUpdate:modelValue": _cache[29] || (_cache[29] = ($event) => $data.settings.disabledDomains = $event),
-                    placeholder: "每行一个域名，支持正则和通配符，例如：\r\nexample.com\r\n*.example.org\r\nexample.*.com\r\n/^(www\\.)?example\\.com$/",
+                    placeholder: "每行一个域名，支持正则和通配符，例如：\nexample.com\n*.example.org\nexample.*.com\n/^(www\\.)?example\\.com$/",
                     rows: "6",
                     class: "domain-textarea"
                   }, null, 512), [
@@ -4841,11 +4823,11 @@
   const App = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render]]);
   const app = vue.createApp(App);
   app.mount(
-      (() => {
-        const appDiv = document.createElement("div");
-        document.documentElement.append(appDiv);
-        return appDiv;
-      })()
+    (() => {
+      const appDiv = document.createElement("div");
+      document.documentElement.append(appDiv);
+      return appDiv;
+    })()
   );
 
 })(Vue);
