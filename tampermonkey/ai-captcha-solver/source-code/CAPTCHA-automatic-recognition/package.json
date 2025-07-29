@@ -1,7 +1,7 @@
 {
   "name": "CAPTCHA-automatic-recognition",
-  "version": "1.1.8",
-  "author": "ezyshu",
+  "version": "9.9.9",
+  "author": "knight",
   "description": "Automatically recognize the CAPTCHA on the webpage and fill it into the input box, click the recognition icon to trigger recognition.",
   "type": "module",
   "license": "Apache-2.0",

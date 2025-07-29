@@ -1,11 +1,13 @@
 // ==UserScript==
-// @name         AI验证码自动识别填充-自用版
+// @name         AI验证码自动识别填充
 // @namespace    https://github.com/ezyshu/UserScript
-// @version      9.9.9.1
+// @version      9.9.9
 // @author       knight
 // @description  自动识别网页上的验证码并填充到输入框中，点击识别图标触发识别。
 // @license      Apache-2.0
 // @icon         https://raw.githubusercontent.com/ezyshu/UserScript/refs/heads/main/CAPTCHA-automatic-recognition/src/assets/logo.png
+// @downloadURL  https://raw.githubusercontent.com/N1ghtss/lin-devhub/refs/heads/main/tampermonkey/ai-captcha-solver/source-code/CAPTCHA-automatic-recognition/dist/CAPTCHA-automatic-recognition.user.js
+// @updateURL    https://raw.githubusercontent.com/N1ghtss/lin-devhub/refs/heads/main/tampermonkey/ai-captcha-solver/source-code/CAPTCHA-automatic-recognition/dist/CAPTCHA-automatic-recognition.user.js
 // @match        *://*/*
 // @require      https://unpkg.com/vue@3.4.38/dist/vue.global.prod.js
 // @grant        GM_addStyle
@@ -28,8 +30,8 @@
     'use strict';
 
     const name = "CAPTCHA-automatic-recognition";
-    const version = "1.1.5";
-    const author = "ezyshu";
+    const version = "9.9.9";
+    const author = "knight";
     const description = "Automatically recognize the CAPTCHA on the webpage and fill it into the input box, click the recognition icon to trigger recognition.";
     const type = "module";
     const license = "Apache-2.0";
@@ -1090,6 +1092,20 @@
             headers && this.set(headers);
         }
 
+        get [Symbol.toStringTag]() {
+            return "AxiosHeaders";
+        }
+
+        static from(thing) {
+            return thing instanceof this ? thing : new this(thing);
+        }
+
+        static concat(first, ...targets) {
+            const computed = new this(first);
+            targets.forEach((target) => computed.set(target));
+            return computed;
+        }
+
         static accessor(header) {
             const internals = this[$internals] = this[$internals] = {
                 accessors: {}
@@ -1106,6 +1122,40 @@
             }
 
             utils$1.isArray(header) ? header.forEach(defineAccessor) : defineAccessor(header);
+            return this;
+        }
+
+        set(header, valueOrRewrite, rewrite) {
+            const self2 = this;
+
+            function setHeader(_value, _header, _rewrite) {
+                const lHeader = normalizeHeader(_header);
+                if (!lHeader) {
+                    throw new Error("header name must be a non-empty string");
+                }
+                const key = utils$1.findKey(self2, lHeader);
+                if (!key || self2[key] === void 0 || _rewrite === true || _rewrite === void 0 && self2[key] !== false) {
+                    self2[key || _header] = normalizeValue(_value);
+                }
+            }
+
+            const setHeaders = (headers, _rewrite) => utils$1.forEach(headers, (_value, _header) => setHeader(_value, _header, _rewrite));
+            if (utils$1.isPlainObject(header) || header instanceof this.constructor) {
+                setHeaders(header, valueOrRewrite);
+            } else if (utils$1.isString(header) && (header = header.trim()) && !isValidHeaderName(header)) {
+                setHeaders(parseHeaders(header), valueOrRewrite);
+            } else if (utils$1.isObject(header) && utils$1.isIterable(header)) {
+                let obj = {}, dest, key;
+                for (const entry of header) {
+                    if (!utils$1.isArray(entry)) {
+                        throw TypeError("Object iterator must return a key-value pair");
+                    }
+                    obj[key = entry[0]] = (dest = obj[key]) ? utils$1.isArray(dest) ? [...dest, entry[1]] : [dest, entry[1]] : entry[1];
+                }
+                setHeaders(obj, valueOrRewrite);
+            } else {
+                header != null && setHeader(valueOrRewrite, header, rewrite);
+            }
             return this;
         }
 
@@ -1141,38 +1191,27 @@
             return false;
         }
 
-        set(header, valueOrRewrite, rewrite) {
+        delete(header, matcher) {
             const self2 = this;
+            let deleted = false;
 
-            function setHeader(_value, _header, _rewrite) {
-                const lHeader = normalizeHeader(_header);
-                if (!lHeader) {
-                    throw new Error("header name must be a non-empty string");
-                }
-                const key = utils$1.findKey(self2, lHeader);
-                if (!key || self2[key] === void 0 || _rewrite === true || _rewrite === void 0 && self2[key] !== false) {
-                    self2[key || _header] = normalizeValue(_value);
-                }
-            }
-
-            const setHeaders = (headers, _rewrite) => utils$1.forEach(headers, (_value, _header) => setHeader(_value, _header, _rewrite));
-            if (utils$1.isPlainObject(header) || header instanceof this.constructor) {
-                setHeaders(header, valueOrRewrite);
-            } else if (utils$1.isString(header) && (header = header.trim()) && !isValidHeaderName(header)) {
-                setHeaders(parseHeaders(header), valueOrRewrite);
-            } else if (utils$1.isObject(header) && utils$1.isIterable(header)) {
-                let obj = {}, dest, key;
-                for (const entry of header) {
-                    if (!utils$1.isArray(entry)) {
-                        throw TypeError("Object iterator must return a key-value pair");
+            function deleteHeader(_header) {
+                _header = normalizeHeader(_header);
+                if (_header) {
+                    const key = utils$1.findKey(self2, _header);
+                    if (key && (!matcher || matchHeaderValue(self2, self2[key], key, matcher))) {
+                        delete self2[key];
+                        deleted = true;
                     }
-                    obj[key = entry[0]] = (dest = obj[key]) ? utils$1.isArray(dest) ? [...dest, entry[1]] : [dest, entry[1]] : entry[1];
                 }
-                setHeaders(obj, valueOrRewrite);
-            } else {
-                header != null && setHeader(valueOrRewrite, header, rewrite);
             }
-            return this;
+
+            if (utils$1.isArray(header)) {
+                header.forEach(deleteHeader);
+            } else {
+                deleteHeader(header);
+            }
+            return deleted;
         }
 
         clear(matcher) {
@@ -1231,43 +1270,6 @@
 
         getSetCookie() {
             return this.get("set-cookie") || [];
-        }
-
-        get [Symbol.toStringTag]() {
-            return "AxiosHeaders";
-        }
-
-        static from(thing) {
-            return thing instanceof this ? thing : new this(thing);
-        }
-
-        static concat(first, ...targets) {
-            const computed = new this(first);
-            targets.forEach((target) => computed.set(target));
-            return computed;
-        }
-
-        delete(header, matcher) {
-            const self2 = this;
-            let deleted = false;
-
-            function deleteHeader(_header) {
-                _header = normalizeHeader(_header);
-                if (_header) {
-                    const key = utils$1.findKey(self2, _header);
-                    if (key && (!matcher || matchHeaderValue(self2, self2[key], key, matcher))) {
-                        delete self2[key];
-                        deleted = true;
-                    }
-                }
-            }
-
-            if (utils$1.isArray(header)) {
-                header.forEach(deleteHeader);
-            } else {
-                deleteHeader(header);
-            }
-            return deleted;
         }
     }
 
@@ -2379,6 +2381,21 @@
         }
 
         /**
+         * Returns an object that contains a new `CancelToken` and a function that, when called,
+         * cancels the `CancelToken`.
+         */
+        static source() {
+            let cancel;
+            const token = new CancelToken(function executor(c) {
+                cancel = c;
+            });
+            return {
+                token,
+                cancel
+            };
+        }
+
+        /**
          * Throws a `CanceledError` if cancellation has been requested.
          */
         throwIfRequested() {
@@ -2413,21 +2430,6 @@
             if (index !== -1) {
                 this._listeners.splice(index, 1);
             }
-        }
-
-        /**
-         * Returns an object that contains a new `CancelToken` and a function that, when called,
-         * cancels the `CancelToken`.
-         */
-        static source() {
-            let cancel;
-            const token = new CancelToken(function executor(c) {
-                cancel = c;
-            });
-            return {
-                token,
-                cancel
-            };
         }
 
         toAbortSignal() {
@@ -2631,7 +2633,6 @@
                     // 可能的值：'', 'loading', 'success', 'error'
                     ddddocr: ""
                     // 可能的值：'', 'loading', 'success', 'error'
-
                 },
                 // 验证码规则配置
                 rules: [],
@@ -2640,7 +2641,7 @@
                 // 可能的值：'', 'loading', 'success', 'error'
                 // 设置项
                 settings: {
-                    apiType: "ddddocr",
+                    apiType: "openai",
                     // openai, gemini, qwen
                     // OpenAI 设置
                     openaiKey: "",
@@ -2653,11 +2654,6 @@
                     geminiApiUrl: "",
                     geminiModel: "",
                     geminiPrompt: DEFAULT_PROMPT,
-                    // ddddocr 设置
-                    ddddocrKey: "",
-                    ddddocrApiUrl: "http://localhost:23456/",
-                    ddddocrModel: "",
-                    ddddocrPrompt: DEFAULT_PROMPT,
                     // 自定义提示词，默认填充
                     // 通义千问设置
                     qwenKey: "",
@@ -2665,11 +2661,17 @@
                     qwenModel: "",
                     qwenPrompt: DEFAULT_PROMPT,
                     // 自定义提示词，默认填充
+                    // ddddocr设置
+                    ddddocrKey: "",
+                    ddddocrApiUrl: "",
+                    ddddocrModel: "",
+                    ddddocrPrompt: DEFAULT_PROMPT,
+                    // 自定义提示词，默认填充
                     // 自动识别设置
-                    autoRecognize: false,
+                    autoRecognize: true,
                     // 是否启用自动识别
                     // 剪贴板设置
-                    copyToClipboard: true,
+                    copyToClipboard: false,
                     // 是否自动复制到剪贴板
                     // 通知设置
                     showNotification: true,
@@ -2907,7 +2909,7 @@
                     case "qwen":
                         return !!this.settings.qwenKey;
                     case "ddddocr":
-                        return 1;
+                        return !!this.settings.ddddocrApiUrl;
                     default:
                         return false;
                 }
@@ -2960,10 +2962,6 @@
                             };
                         }
                     }
-                    let base64Code = "";
-                    if (imgSrc.startsWith('data:image')) {
-                        base64Code = imgSrc.split("base64,")[1];
-                    }
                     const canvas = document.createElement("canvas");
                     canvas.width = element.naturalWidth || element.width;
                     canvas.height = element.naturalHeight || element.height;
@@ -2986,12 +2984,10 @@
                             message: "图片转换失败或内容为空。请刷新验证码后重试。"
                         };
                     }
-                    const data = {
+                    return {
                         success: true,
-                        data: base64Data,
-                        base64Code: base64Code
+                        data: base64Data
                     };
-                    return data;
                 } catch (error) {
                     console.error("图片转base64失败:", error);
                     return {
@@ -3152,24 +3148,19 @@
                 return "";
             },
             /**
-             * 使用ddddocr识别验证码
+             * 使用ddddocr api
              */
             async recognizeWithDdddocr(base64Image) {
-                const apiUrl = this.settings.qwenApiUrl || "http://localhost:23456/";
+                const apiUrl = this.settings.qwenApiUrl || "http://127.0.0.1:23456/";
                 const datas = {
-                    "ImageBase64": String(base64Image),
-                }
+                    "ImageBase64": String(base64Image)
+                };
                 const response = await this.request({
                     method: "POST",
                     url: apiUrl + "identify_GeneralCAPTCHA",
-                    data: JSON.stringify(datas),
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    responseType: "json",
+                    data: JSON.stringify(datas)
                 });
                 if (response.data) {
-                    // const text = response.data.choices[0].message.content;
                     return response.data.result;
                 }
                 return "";
@@ -3450,7 +3441,7 @@
                             this.showToast(`验证码已识别：${text} (已复制到剪贴板)`, "success");
                         }
                     } else {
-                        // this.showToast(`验证码已识别：${text}`, "success");
+                        this.showToast(`验证码已识别：${text}`, "success");
                     }
                     icon.classList.remove("captcha-recognition-loading");
                     icon.classList.add("captcha-recognition-success");
@@ -3579,9 +3570,9 @@
              * 初始化插件
              */
             init() {
-
                 this.registerMenuCommands();
                 this.loadSettings();
+                this.checkAndFetchCloudConfig();
                 if (this.isCurrentDomainDisabled()) {
                     return;
                 }
@@ -3869,7 +3860,10 @@
                             this.apiTestStatus[apiType] = "success";
                         }
                     } else if (apiType === "ddddocr") {
-                        console.log(666)
+                        const data = await this.recognizeWithDdddocr(testBase64Image);
+                        if (data) {
+                            this.apiTestStatus[apiType] = "success";
+                        }
                     }
                     setTimeout(() => {
                         this.apiTestStatus[apiType] = "";
@@ -4211,6 +4205,32 @@
                 return inputField;
             },
             /**
+             * 检查并自动获取云端配置（每天首次使用）
+             */
+            async checkAndFetchCloudConfig() {
+                try {
+                    const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+                    let lastConfigUpdate;
+                    if (typeof GM_getValue !== "undefined") {
+                        lastConfigUpdate = GM_getValue("lastConfigUpdate");
+                    } else {
+                        lastConfigUpdate = localStorage.getItem("lastConfigUpdate");
+                    }
+                    if (!lastConfigUpdate || lastConfigUpdate !== today) {
+                        this.showToast("正在获取最新云端配置...", "info");
+                        await this.loadRules();
+                        if (typeof GM_setValue !== "undefined") {
+                            GM_setValue("lastConfigUpdate", today);
+                        } else {
+                            localStorage.setItem("lastConfigUpdate", today);
+                        }
+                        this.showToast("云端配置更新完成", "success");
+                    }
+                } catch (error) {
+                    console.error("自动获取云端配置失败:", error);
+                }
+            },
+            /**
              * 优化Canvas验证码图像
              * @param {HTMLCanvasElement} canvasElement - canvas元素
              * @returns {Object} - 返回包含成功状态和数据的对象
@@ -4346,114 +4366,122 @@
     const _hoisted_15 = /* @__PURE__ */ vue.createElementVNode("option", {value: "openai"}, "OpenAI", -1);
     const _hoisted_16 = /* @__PURE__ */ vue.createElementVNode("option", {value: "gemini"}, "Google Gemini", -1);
     const _hoisted_17 = /* @__PURE__ */ vue.createElementVNode("option", {value: "qwen"}, "阿里云通义千问", -1);
-    const _hoisted_17_local = /* @__PURE__ */ vue.createElementVNode("option", {value: "ddddocr"}, "ddddocr", -1);
-    const _hoisted_18 = [
+    const _hoisted_18 = /* @__PURE__ */ vue.createElementVNode("option", {value: "ddddocr"}, "ddddocr", -1);
+    const _hoisted_19 = [
         _hoisted_15,
         _hoisted_16,
         _hoisted_17,
-        _hoisted_17_local
+        _hoisted_18
     ];
-    const _hoisted_19 = {key: 0};
-    const _hoisted_20 = {class: "captcha-settings-item"};
-    const _hoisted_21 = /* @__PURE__ */ vue.createElementVNode("label", null, "OpenAI API Key:", -1);
-    const _hoisted_22 = {class: "input-with-button"};
-    const _hoisted_23 = {key: 0};
-    const _hoisted_24 = {key: 1};
-    const _hoisted_25 = {key: 2};
-    const _hoisted_26 = {key: 3};
-    const _hoisted_27 = {class: "captcha-settings-item"};
-    const _hoisted_28 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
-    const _hoisted_29 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
-    const _hoisted_30 = {class: "captcha-settings-item"};
-    const _hoisted_31 = /* @__PURE__ */ vue.createElementVNode("label", null, "模型 (可选):", -1);
-    const _hoisted_32 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认模型", -1);
-    const _hoisted_33 = {class: "captcha-settings-item"};
-    const _hoisted_34 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义提示词 (可选):", -1);
-    const _hoisted_35 = {class: "textarea-with-button"};
-    const _hoisted_36 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认提示词", -1);
-    const _hoisted_37 = {key: 1};
-    const _hoisted_38 = {class: "captcha-settings-item"};
-    const _hoisted_39 = /* @__PURE__ */ vue.createElementVNode("label", null, "Google Gemini API Key:", -1);
-    const _hoisted_39_local = /* @__PURE__ */ vue.createElementVNode("label", null, "", -1);
-    const _hoisted_40 = {class: "input-with-button"};
-    const _hoisted_41 = {key: 0};
-    const _hoisted_42 = {key: 1};
-    const _hoisted_43 = {key: 2};
-    const _hoisted_44 = {key: 3};
-    const _hoisted_45 = {class: "captcha-settings-item"};
-    const _hoisted_46 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
-    const _hoisted_47 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
-    const _hoisted_48 = {class: "captcha-settings-item"};
-    const _hoisted_49 = /* @__PURE__ */ vue.createElementVNode("label", null, "模型 (可选):", -1);
-    const _hoisted_50 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认模型", -1);
-    const _hoisted_51 = {class: "captcha-settings-item"};
-    const _hoisted_52 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义提示词 (可选):", -1);
-    const _hoisted_53 = {class: "textarea-with-button"};
-    const _hoisted_54 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认提示词", -1);
-    const _hoisted_55 = {key: 2};
-    const _hoisted_56 = {class: "captcha-settings-item"};
-    const _hoisted_57 = /* @__PURE__ */ vue.createElementVNode("label", null, "阿里云通义千问 API Key:", -1);
-    const _hoisted_58 = {class: "input-with-button"};
-    const _hoisted_59 = {key: 0};
-    const _hoisted_60 = {key: 1};
-    const _hoisted_61 = {key: 2};
-    const _hoisted_62 = {key: 3};
-    const _hoisted_63 = {class: "captcha-settings-item"};
-    const _hoisted_64 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
-    const _hoisted_65 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
-    const _hoisted_66 = {class: "captcha-settings-item"};
-    const _hoisted_67 = /* @__PURE__ */ vue.createElementVNode("label", null, "模型 (可选):", -1);
-    const _hoisted_68 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认模型", -1);
-    const _hoisted_69 = {class: "captcha-settings-item"};
-    const _hoisted_70 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义提示词 (可选):", -1);
-    const _hoisted_71 = {class: "textarea-with-button"};
-    const _hoisted_72 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认提示词", -1);
-    const _hoisted_73 = {
+    const _hoisted_20 = {key: 0};
+    const _hoisted_21 = {class: "captcha-settings-item"};
+    const _hoisted_22 = /* @__PURE__ */ vue.createElementVNode("label", null, "OpenAI API Key:", -1);
+    const _hoisted_23 = {class: "input-with-button"};
+    const _hoisted_24 = {key: 0};
+    const _hoisted_25 = {key: 1};
+    const _hoisted_26 = {key: 2};
+    const _hoisted_27 = {key: 3};
+    const _hoisted_28 = {class: "captcha-settings-item"};
+    const _hoisted_29 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
+    const _hoisted_30 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
+    const _hoisted_31 = {class: "captcha-settings-item"};
+    const _hoisted_32 = /* @__PURE__ */ vue.createElementVNode("label", null, "模型 (可选):", -1);
+    const _hoisted_33 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认模型", -1);
+    const _hoisted_34 = {class: "captcha-settings-item"};
+    const _hoisted_35 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义提示词 (可选):", -1);
+    const _hoisted_36 = {class: "textarea-with-button"};
+    const _hoisted_37 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认提示词", -1);
+    const _hoisted_38 = {key: 1};
+    const _hoisted_39 = {class: "captcha-settings-item"};
+    const _hoisted_40 = /* @__PURE__ */ vue.createElementVNode("label", null, "Google Gemini API Key:", -1);
+    const _hoisted_41 = {class: "input-with-button"};
+    const _hoisted_42 = {key: 0};
+    const _hoisted_43 = {key: 1};
+    const _hoisted_44 = {key: 2};
+    const _hoisted_45 = {key: 3};
+    const _hoisted_46 = {class: "captcha-settings-item"};
+    const _hoisted_47 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
+    const _hoisted_48 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
+    const _hoisted_49 = {class: "captcha-settings-item"};
+    const _hoisted_50 = /* @__PURE__ */ vue.createElementVNode("label", null, "模型 (可选):", -1);
+    const _hoisted_51 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认模型", -1);
+    const _hoisted_52 = {class: "captcha-settings-item"};
+    const _hoisted_53 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义提示词 (可选):", -1);
+    const _hoisted_54 = {class: "textarea-with-button"};
+    const _hoisted_55 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认提示词", -1);
+    const _hoisted_56 = {key: 2};
+    const _hoisted_57 = {class: "captcha-settings-item"};
+    const _hoisted_58 = /* @__PURE__ */ vue.createElementVNode("label", null, "阿里云通义千问 API Key:", -1);
+    const _hoisted_59 = {class: "input-with-button"};
+    const _hoisted_60 = {key: 0};
+    const _hoisted_61 = {key: 1};
+    const _hoisted_62 = {key: 2};
+    const _hoisted_63 = {key: 3};
+    const _hoisted_64 = {class: "captcha-settings-item"};
+    const _hoisted_65 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
+    const _hoisted_66 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
+    const _hoisted_67 = {class: "captcha-settings-item"};
+    const _hoisted_68 = /* @__PURE__ */ vue.createElementVNode("label", null, "模型 (可选):", -1);
+    const _hoisted_69 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认模型", -1);
+    const _hoisted_70 = {class: "captcha-settings-item"};
+    const _hoisted_71 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义提示词 (可选):", -1);
+    const _hoisted_72 = {class: "textarea-with-button"};
+    const _hoisted_73 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认提示词", -1);
+    const _hoisted_74 = {key: 3};
+    const _hoisted_75 = {class: "captcha-settings-item"};
+    const _hoisted_76 = {key: 0};
+    const _hoisted_77 = {key: 1};
+    const _hoisted_78 = {key: 2};
+    const _hoisted_79 = {key: 3};
+    const _hoisted_80 = {class: "captcha-settings-item"};
+    const _hoisted_81 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
+    const _hoisted_82 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
+    const _hoisted_83 = {
         key: 1,
         class: "settings-content-tab"
     };
-    const _hoisted_74 = {class: "settings-card"};
-    const _hoisted_75 = /* @__PURE__ */ vue.createElementVNode("div", {class: "settings-card-title"}, [
+    const _hoisted_84 = {class: "settings-card"};
+    const _hoisted_85 = /* @__PURE__ */ vue.createElementVNode("div", {class: "settings-card-title"}, [
         /* @__PURE__ */ vue.createElementVNode("span", null, "功能设置")
     ], -1);
-    const _hoisted_76 = {class: "captcha-settings-item"};
-    const _hoisted_77 = {style: {"display": "flex", "align-items": "center"}};
-    const _hoisted_78 = /* @__PURE__ */ vue.createElementVNode("label", {
+    const _hoisted_86 = {class: "captcha-settings-item"};
+    const _hoisted_87 = {style: {"display": "flex", "align-items": "center"}};
+    const _hoisted_88 = /* @__PURE__ */ vue.createElementVNode("label", {
         for: "autoRecognize",
         style: {"margin-bottom": "0"}
     }, "验证码图片变化时自动识别", -1);
-    const _hoisted_79 = {class: "captcha-settings-item"};
-    const _hoisted_80 = {style: {"display": "flex", "align-items": "center"}};
-    const _hoisted_81 = /* @__PURE__ */ vue.createElementVNode("label", {
+    const _hoisted_89 = {class: "captcha-settings-item"};
+    const _hoisted_90 = {style: {"display": "flex", "align-items": "center"}};
+    const _hoisted_91 = /* @__PURE__ */ vue.createElementVNode("label", {
         for: "copyToClipboard",
         style: {"margin-bottom": "0"}
     }, "自动复制到剪贴板", -1);
-    const _hoisted_82 = {class: "captcha-settings-item"};
-    const _hoisted_83 = {style: {"display": "flex", "align-items": "center"}};
-    const _hoisted_84 = /* @__PURE__ */ vue.createElementVNode("label", {
+    const _hoisted_92 = {class: "captcha-settings-item"};
+    const _hoisted_93 = {style: {"display": "flex", "align-items": "center"}};
+    const _hoisted_94 = /* @__PURE__ */ vue.createElementVNode("label", {
         for: "showNotification",
         style: {"margin-bottom": "0"}
     }, "显示右上角通知提示", -1);
-    const _hoisted_85 = {
+    const _hoisted_95 = {
         key: 2,
         class: "settings-content-tab"
     };
-    const _hoisted_86 = {class: "settings-card"};
-    const _hoisted_87 = /* @__PURE__ */ vue.createElementVNode("div", {class: "settings-card-title"}, [
+    const _hoisted_96 = {class: "settings-card"};
+    const _hoisted_97 = /* @__PURE__ */ vue.createElementVNode("div", {class: "settings-card-title"}, [
         /* @__PURE__ */ vue.createElementVNode("span", null, "禁用域名列表")
     ], -1);
-    const _hoisted_88 = {class: "captcha-settings-item"};
-    const _hoisted_89 = /* @__PURE__ */ vue.createElementVNode("small", null, [
+    const _hoisted_98 = {class: "captcha-settings-item"};
+    const _hoisted_99 = /* @__PURE__ */ vue.createElementVNode("small", null, [
         /* @__PURE__ */ vue.createTextVNode(" 在这些域名下将不启用验证码识别功能 "),
         /* @__PURE__ */ vue.createElementVNode("br"),
         /* @__PURE__ */ vue.createTextVNode(" 多个配置请使用换行显示 ")
     ], -1);
-    const _hoisted_90 = {
+    const _hoisted_100 = {
         key: 3,
         class: "settings-content-tab"
     };
-    const _hoisted_91 = {class: "settings-card"};
-    const _hoisted_92 = /* @__PURE__ */ vue.createElementVNode("div", {class: "settings-card-title"}, [
+    const _hoisted_101 = {class: "settings-card"};
+    const _hoisted_102 = /* @__PURE__ */ vue.createElementVNode("div", {class: "settings-card-title"}, [
         /* @__PURE__ */ vue.createElementVNode("span", null, [
             /* @__PURE__ */ vue.createTextVNode("高级设置 "),
             /* @__PURE__ */ vue.createElementVNode("a", {
@@ -4463,28 +4491,28 @@
             }, "教程")
         ])
     ], -1);
-    const _hoisted_93 = /* @__PURE__ */ vue.createElementVNode("div", {class: "advanced-settings-warning"}, " ⚠️ 警告：如果您不了解CSS选择器，请不要修改这些设置，可能导致识别功能失效 ", -1);
-    const _hoisted_94 = {class: "captcha-settings-item"};
-    const _hoisted_95 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义验证码图片选择器：", -1);
-    const _hoisted_96 = {class: "custom-selectors"};
-    const _hoisted_97 = ["onUpdate:modelValue"];
-    const _hoisted_98 = ["onClick"];
-    const _hoisted_99 = {class: "captcha-settings-item"};
-    const _hoisted_100 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义输入框选择器：", -1);
-    const _hoisted_101 = {class: "custom-selectors"};
-    const _hoisted_102 = ["onUpdate:modelValue"];
-    const _hoisted_103 = ["onClick"];
+    const _hoisted_103 = /* @__PURE__ */ vue.createElementVNode("div", {class: "advanced-settings-warning"}, " ⚠️ 警告：如果您不了解CSS选择器，请不要修改这些设置，可能导致识别功能失效 ", -1);
     const _hoisted_104 = {class: "captcha-settings-item"};
-    const _hoisted_105 = /* @__PURE__ */ vue.createElementVNode("label", null, "验证码规则管理：", -1);
-    const _hoisted_106 = {class: "rules-management"};
-    const _hoisted_107 = {class: "rules-url-input"};
-    const _hoisted_108 = /* @__PURE__ */ vue.createElementVNode("small", null, "规则文件URL，留空则使用默认URL：https://ghfast.top/https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json", -1);
-    const _hoisted_109 = {key: 0};
-    const _hoisted_110 = {key: 1};
-    const _hoisted_111 = {key: 2};
-    const _hoisted_112 = {key: 3};
-    const _hoisted_113 = /* @__PURE__ */ vue.createElementVNode("small", null, "从远程加载最新的验证码识别规则", -1);
-    const _hoisted_114 = {class: "captcha-settings-buttons"};
+    const _hoisted_105 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义验证码图片选择器：", -1);
+    const _hoisted_106 = {class: "custom-selectors"};
+    const _hoisted_107 = ["onUpdate:modelValue"];
+    const _hoisted_108 = ["onClick"];
+    const _hoisted_109 = {class: "captcha-settings-item"};
+    const _hoisted_110 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义输入框选择器：", -1);
+    const _hoisted_111 = {class: "custom-selectors"};
+    const _hoisted_112 = ["onUpdate:modelValue"];
+    const _hoisted_113 = ["onClick"];
+    const _hoisted_114 = {class: "captcha-settings-item"};
+    const _hoisted_115 = /* @__PURE__ */ vue.createElementVNode("label", null, "验证码规则管理：", -1);
+    const _hoisted_116 = {class: "rules-management"};
+    const _hoisted_117 = {class: "rules-url-input"};
+    const _hoisted_118 = /* @__PURE__ */ vue.createElementVNode("small", null, "规则文件URL，留空则使用默认URL：https://ghfast.top/https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json", -1);
+    const _hoisted_119 = {key: 0};
+    const _hoisted_120 = {key: 1};
+    const _hoisted_121 = {key: 2};
+    const _hoisted_122 = {key: 3};
+    const _hoisted_123 = /* @__PURE__ */ vue.createElementVNode("small", null, "从远程加载最新的验证码识别规则", -1);
+    const _hoisted_124 = {class: "captcha-settings-buttons"};
 
     function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         return vue.openBlock(), vue.createElementBlock("div", _hoisted_1, [
@@ -4528,14 +4556,14 @@
                                     _hoisted_14,
                                     vue.withDirectives(vue.createElementVNode("select", {
                                         "onUpdate:modelValue": _cache[5] || (_cache[5] = ($event) => $data.settings.apiType = $event)
-                                    }, _hoisted_18, 512), [
+                                    }, _hoisted_19, 512), [
                                         [vue.vModelSelect, $data.settings.apiType]
                                     ])
                                 ]),
-                                $data.settings.apiType === "openai" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_19, [
-                                    vue.createElementVNode("div", _hoisted_20, [
-                                        _hoisted_21,
-                                        vue.createElementVNode("div", _hoisted_22, [
+                                $data.settings.apiType === "openai" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_20, [
+                                    vue.createElementVNode("div", _hoisted_21, [
+                                        _hoisted_22,
+                                        vue.createElementVNode("div", _hoisted_23, [
                                             vue.withDirectives(vue.createElementVNode("input", {
                                                 type: "text",
                                                 "onUpdate:modelValue": _cache[6] || (_cache[6] = ($event) => $data.settings.openaiKey = $event),
@@ -4552,12 +4580,12 @@
                                                 }]),
                                                 onClick: _cache[7] || (_cache[7] = ($event) => $options.testApiConnection("openai"))
                                             }, [
-                                                $data.apiTestStatus.openai === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_23, "测试连接")) : $data.apiTestStatus.openai === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_24)) : $data.apiTestStatus.openai === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_25, "成功")) : $data.apiTestStatus.openai === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_26, "失败")) : vue.createCommentVNode("", true)
+                                                $data.apiTestStatus.openai === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_24, "测试连接")) : $data.apiTestStatus.openai === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_25)) : $data.apiTestStatus.openai === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_26, "成功")) : $data.apiTestStatus.openai === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_27, "失败")) : vue.createCommentVNode("", true)
                                             ], 2)
                                         ])
                                     ]),
-                                    vue.createElementVNode("div", _hoisted_27, [
-                                        _hoisted_28,
+                                    vue.createElementVNode("div", _hoisted_28, [
+                                        _hoisted_29,
                                         vue.withDirectives(vue.createElementVNode("input", {
                                             type: "text",
                                             "onUpdate:modelValue": _cache[8] || (_cache[8] = ($event) => $data.settings.openaiApiUrl = $event),
@@ -4565,10 +4593,10 @@
                                         }, null, 512), [
                                             [vue.vModelText, $data.settings.openaiApiUrl]
                                         ]),
-                                        _hoisted_29
+                                        _hoisted_30
                                     ]),
-                                    vue.createElementVNode("div", _hoisted_30, [
-                                        _hoisted_31,
+                                    vue.createElementVNode("div", _hoisted_31, [
+                                        _hoisted_32,
                                         vue.withDirectives(vue.createElementVNode("input", {
                                             type: "text",
                                             "onUpdate:modelValue": _cache[9] || (_cache[9] = ($event) => $data.settings.openaiModel = $event),
@@ -4576,11 +4604,11 @@
                                         }, null, 512), [
                                             [vue.vModelText, $data.settings.openaiModel]
                                         ]),
-                                        _hoisted_32
+                                        _hoisted_33
                                     ]),
-                                    vue.createElementVNode("div", _hoisted_33, [
-                                        _hoisted_34,
-                                        vue.createElementVNode("div", _hoisted_35, [
+                                    vue.createElementVNode("div", _hoisted_34, [
+                                        _hoisted_35,
+                                        vue.createElementVNode("div", _hoisted_36, [
                                             vue.withDirectives(vue.createElementVNode("textarea", {
                                                 "onUpdate:modelValue": _cache[10] || (_cache[10] = ($event) => $data.settings.openaiPrompt = $event),
                                                 placeholder: "输入自定义提示词，或点击右侧按钮使用默认提示词",
@@ -4594,13 +4622,13 @@
                                                 onClick: _cache[11] || (_cache[11] = ($event) => $data.settings.openaiPrompt = $data.DEFAULT_PROMPT)
                                             }, " 使用默认 ")
                                         ]),
-                                        _hoisted_36
+                                        _hoisted_37
                                     ])
                                 ])) : vue.createCommentVNode("", true),
-                                $data.settings.apiType === "gemini" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_37, [
-                                    vue.createElementVNode("div", _hoisted_38, [
-                                        _hoisted_39,
-                                        vue.createElementVNode("div", _hoisted_40, [
+                                $data.settings.apiType === "gemini" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_38, [
+                                    vue.createElementVNode("div", _hoisted_39, [
+                                        _hoisted_40,
+                                        vue.createElementVNode("div", _hoisted_41, [
                                             vue.withDirectives(vue.createElementVNode("input", {
                                                 type: "text",
                                                 "onUpdate:modelValue": _cache[12] || (_cache[12] = ($event) => $data.settings.geminiKey = $event),
@@ -4617,12 +4645,12 @@
                                                 }]),
                                                 onClick: _cache[13] || (_cache[13] = ($event) => $options.testApiConnection("gemini"))
                                             }, [
-                                                $data.apiTestStatus.gemini === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_41, "测试连接")) : $data.apiTestStatus.gemini === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_42)) : $data.apiTestStatus.gemini === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_43, "成功")) : $data.apiTestStatus.gemini === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_44, "失败")) : vue.createCommentVNode("", true)
+                                                $data.apiTestStatus.gemini === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_42, "测试连接")) : $data.apiTestStatus.gemini === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_43)) : $data.apiTestStatus.gemini === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_44, "成功")) : $data.apiTestStatus.gemini === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_45, "失败")) : vue.createCommentVNode("", true)
                                             ], 2)
                                         ])
                                     ]),
-                                    vue.createElementVNode("div", _hoisted_45, [
-                                        _hoisted_46,
+                                    vue.createElementVNode("div", _hoisted_46, [
+                                        _hoisted_47,
                                         vue.withDirectives(vue.createElementVNode("input", {
                                             type: "text",
                                             "onUpdate:modelValue": _cache[14] || (_cache[14] = ($event) => $data.settings.geminiApiUrl = $event),
@@ -4630,10 +4658,10 @@
                                         }, null, 512), [
                                             [vue.vModelText, $data.settings.geminiApiUrl]
                                         ]),
-                                        _hoisted_47
+                                        _hoisted_48
                                     ]),
-                                    vue.createElementVNode("div", _hoisted_48, [
-                                        _hoisted_49,
+                                    vue.createElementVNode("div", _hoisted_49, [
+                                        _hoisted_50,
                                         vue.withDirectives(vue.createElementVNode("input", {
                                             type: "text",
                                             "onUpdate:modelValue": _cache[15] || (_cache[15] = ($event) => $data.settings.geminiModel = $event),
@@ -4641,11 +4669,11 @@
                                         }, null, 512), [
                                             [vue.vModelText, $data.settings.geminiModel]
                                         ]),
-                                        _hoisted_50
+                                        _hoisted_51
                                     ]),
-                                    vue.createElementVNode("div", _hoisted_51, [
-                                        _hoisted_52,
-                                        vue.createElementVNode("div", _hoisted_53, [
+                                    vue.createElementVNode("div", _hoisted_52, [
+                                        _hoisted_53,
+                                        vue.createElementVNode("div", _hoisted_54, [
                                             vue.withDirectives(vue.createElementVNode("textarea", {
                                                 "onUpdate:modelValue": _cache[16] || (_cache[16] = ($event) => $data.settings.geminiPrompt = $event),
                                                 placeholder: "输入自定义提示词，或点击右侧按钮使用默认提示词",
@@ -4659,78 +4687,13 @@
                                                 onClick: _cache[17] || (_cache[17] = ($event) => $data.settings.geminiPrompt = $data.DEFAULT_PROMPT)
                                             }, " 使用默认 ")
                                         ]),
-                                        _hoisted_54
+                                        _hoisted_55
                                     ])
                                 ])) : vue.createCommentVNode("", true),
-                                $data.settings.apiType === "ddddocr" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_37, [
-                                    vue.createElementVNode("div", _hoisted_38, [
-                                        _hoisted_39_local,
-                                        vue.createElementVNode("div", _hoisted_40, [
-                                            // vue.withDirectives(vue.createElementVNode("input", {
-                                            //     type: "text",
-                                            //     "onUpdate:modelValue": _cache[12] || (_cache[12] = ($event) => $data.settings.geminiKey = $event),
-                                            //     placeholder: "输入Gemini API Key"
-                                            // }, null, 512), [
-                                            //     [vue.vModelText, $data.settings.geminiKey]
-                                            // ]),
-                                            vue.createElementVNode("button", {
-                                                type: "button",
-                                                class: vue.normalizeClass(["test-api-button", {
-                                                    "test-loading": $data.apiTestStatus.ddddocr === "loading",
-                                                    "test-success": $data.apiTestStatus.ddddocr === "success",
-                                                    "test-error": $data.apiTestStatus.ddddocr === "error"
-                                                }]),
-                                                onClick: _cache[13] || (_cache[13] = ($event) => $options.testApiConnection("gemini"))
-                                            }, [
-                                                $data.apiTestStatus.ddddocr === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_41, "测试连接")) : $data.apiTestStatus.ddddocr === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_42)) : $data.apiTestStatus.ddddocr === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_43, "成功")) : $data.apiTestStatus.ddddocr === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_44, "失败")) : vue.createCommentVNode("", true)
-                                            ], 2)
-                                        ])
-                                    ]),
-                                    vue.createElementVNode("div", _hoisted_45, [
-                                        _hoisted_46,
-                                        vue.withDirectives(vue.createElementVNode("input", {
-                                            type: "text",
-                                            "onUpdate:modelValue": _cache[14] || (_cache[14] = ($event) => $data.settings.ddddocrApiUrl = $event),
-                                            placeholder: "http://localhost:23456/"
-                                        }, null, 512), [
-                                            [vue.vModelText, $data.settings.ddddocrApiUrl]
-                                        ]),
-                                        _hoisted_47
-                                    ]),
-                                    // vue.createElementVNode("div", _hoisted_48, [
-                                    //     _hoisted_49,
-                                    //     vue.withDirectives(vue.createElementVNode("input", {
-                                    //         type: "text",
-                                    //         "onUpdate:modelValue": _cache[15] || (_cache[15] = ($event) => $data.settings.geminiModel = $event),
-                                    //         placeholder: "gemini-2.5-flash-lite-preview-06-17"
-                                    //     }, null, 512), [
-                                    //         [vue.vModelText, $data.settings.geminiModel]
-                                    //     ]),
-                                    //     _hoisted_50
-                                    // ]),
-                                    // vue.createElementVNode("div", _hoisted_51, [
-                                    //     _hoisted_52,
-                                    //     vue.createElementVNode("div", _hoisted_53, [
-                                    //         vue.withDirectives(vue.createElementVNode("textarea", {
-                                    //             "onUpdate:modelValue": _cache[16] || (_cache[16] = ($event) => $data.settings.geminiPrompt = $event),
-                                    //             placeholder: "输入自定义提示词，或点击右侧按钮使用默认提示词",
-                                    //             rows: "3"
-                                    //         }, null, 512), [
-                                    //             [vue.vModelText, $data.settings.geminiPrompt]
-                                    //         ]),
-                                    //         vue.createElementVNode("button", {
-                                    //             type: "button",
-                                    //             class: "use-default-prompt",
-                                    //             onClick: _cache[17] || (_cache[17] = ($event) => $data.settings.geminiPrompt = $data.DEFAULT_PROMPT)
-                                    //         }, " 使用默认 ")
-                                    //     ]),
-                                    //     _hoisted_54
-                                    // ])
-                                ])) : vue.createCommentVNode("", true),
-                                $data.settings.apiType === "qwen" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_55, [
-                                    vue.createElementVNode("div", _hoisted_56, [
-                                        _hoisted_57,
-                                        vue.createElementVNode("div", _hoisted_58, [
+                                $data.settings.apiType === "qwen" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_56, [
+                                    vue.createElementVNode("div", _hoisted_57, [
+                                        _hoisted_58,
+                                        vue.createElementVNode("div", _hoisted_59, [
                                             vue.withDirectives(vue.createElementVNode("input", {
                                                 type: "text",
                                                 "onUpdate:modelValue": _cache[18] || (_cache[18] = ($event) => $data.settings.qwenKey = $event),
@@ -4747,12 +4710,12 @@
                                                 }]),
                                                 onClick: _cache[19] || (_cache[19] = ($event) => $options.testApiConnection("qwen"))
                                             }, [
-                                                $data.apiTestStatus.qwen === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_59, "测试连接")) : $data.apiTestStatus.qwen === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_60)) : $data.apiTestStatus.qwen === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_61, "成功")) : $data.apiTestStatus.qwen === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_62, "失败")) : vue.createCommentVNode("", true)
+                                                $data.apiTestStatus.qwen === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_60, "测试连接")) : $data.apiTestStatus.qwen === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_61)) : $data.apiTestStatus.qwen === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_62, "成功")) : $data.apiTestStatus.qwen === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_63, "失败")) : vue.createCommentVNode("", true)
                                             ], 2)
                                         ])
                                     ]),
-                                    vue.createElementVNode("div", _hoisted_63, [
-                                        _hoisted_64,
+                                    vue.createElementVNode("div", _hoisted_64, [
+                                        _hoisted_65,
                                         vue.withDirectives(vue.createElementVNode("input", {
                                             type: "text",
                                             "onUpdate:modelValue": _cache[20] || (_cache[20] = ($event) => $data.settings.qwenApiUrl = $event),
@@ -4760,10 +4723,10 @@
                                         }, null, 512), [
                                             [vue.vModelText, $data.settings.qwenApiUrl]
                                         ]),
-                                        _hoisted_65
+                                        _hoisted_66
                                     ]),
-                                    vue.createElementVNode("div", _hoisted_66, [
-                                        _hoisted_67,
+                                    vue.createElementVNode("div", _hoisted_67, [
+                                        _hoisted_68,
                                         vue.withDirectives(vue.createElementVNode("input", {
                                             type: "text",
                                             "onUpdate:modelValue": _cache[21] || (_cache[21] = ($event) => $data.settings.qwenModel = $event),
@@ -4771,11 +4734,11 @@
                                         }, null, 512), [
                                             [vue.vModelText, $data.settings.qwenModel]
                                         ]),
-                                        _hoisted_68
+                                        _hoisted_69
                                     ]),
-                                    vue.createElementVNode("div", _hoisted_69, [
-                                        _hoisted_70,
-                                        vue.createElementVNode("div", _hoisted_71, [
+                                    vue.createElementVNode("div", _hoisted_70, [
+                                        _hoisted_71,
+                                        vue.createElementVNode("div", _hoisted_72, [
                                             vue.withDirectives(vue.createElementVNode("textarea", {
                                                 "onUpdate:modelValue": _cache[22] || (_cache[22] = ($event) => $data.settings.qwenPrompt = $event),
                                                 placeholder: "输入自定义提示词，或点击右侧按钮使用默认提示词",
@@ -4789,78 +4752,104 @@
                                                 onClick: _cache[23] || (_cache[23] = ($event) => $data.settings.qwenPrompt = $data.DEFAULT_PROMPT)
                                             }, " 使用默认 ")
                                         ]),
-                                        _hoisted_72
+                                        _hoisted_73
                                     ])
-                                ])) : vue.createCommentVNode("", true)
+                                ])) : vue.createCommentVNode("", true),
+                                $data.settings.apiType === "ddddocr" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_74, [
+                                    vue.createElementVNode("div", _hoisted_75, [
+                                        vue.createElementVNode("button", {
+                                            type: "button",
+                                            class: vue.normalizeClass(["test-api-button", {
+                                                "test-loading": $data.apiTestStatus.ddddocr === "loading",
+                                                "test-success": $data.apiTestStatus.ddddocr === "success",
+                                                "test-error": $data.apiTestStatus.ddddocr === "error"
+                                            }]),
+                                            onClick: _cache[24] || (_cache[24] = ($event) => $options.testApiConnection("ddddocr"))
+                                        }, [
+                                            $data.apiTestStatus.ddddocr === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_76, "测试连接")) : $data.apiTestStatus.ddddocr === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_77)) : $data.apiTestStatus.ddddocr === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_78, "成功")) : $data.apiTestStatus.ddddocr === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_79, "失败")) : vue.createCommentVNode("", true)
+                                        ], 2)
+                                    ])
+                                ])) : vue.createCommentVNode("", true),
+                                vue.createElementVNode("div", _hoisted_80, [
+                                    _hoisted_81,
+                                    vue.withDirectives(vue.createElementVNode("input", {
+                                        type: "text",
+                                        "onUpdate:modelValue": _cache[25] || (_cache[25] = ($event) => $data.settings.ddddocrApiUrl = $event),
+                                        placeholder: "http://127.0.0.1:23456/"
+                                    }, null, 512), [
+                                        [vue.vModelText, $data.settings.ddddocrApiUrl]
+                                    ]),
+                                    _hoisted_82
+                                ])
                             ])
                         ])) : vue.createCommentVNode("", true),
-                        $data.activeSettingTab === "function" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_73, [
-                            vue.createElementVNode("div", _hoisted_74, [
-                                _hoisted_75,
-                                vue.createElementVNode("div", _hoisted_76, [
-                                    vue.createElementVNode("div", _hoisted_77, [
+                        $data.activeSettingTab === "function" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_83, [
+                            vue.createElementVNode("div", _hoisted_84, [
+                                _hoisted_85,
+                                vue.createElementVNode("div", _hoisted_86, [
+                                    vue.createElementVNode("div", _hoisted_87, [
                                         vue.withDirectives(vue.createElementVNode("input", {
                                             type: "checkbox",
-                                            "onUpdate:modelValue": _cache[24] || (_cache[24] = ($event) => $data.settings.autoRecognize = $event),
+                                            "onUpdate:modelValue": _cache[26] || (_cache[26] = ($event) => $data.settings.autoRecognize = $event),
                                             id: "autoRecognize",
                                             style: {"width": "auto", "margin-right": "8px !important"}
                                         }, null, 512), [
                                             [vue.vModelCheckbox, $data.settings.autoRecognize]
                                         ]),
-                                        _hoisted_78
+                                        _hoisted_88
                                     ])
                                 ]),
-                                vue.createElementVNode("div", _hoisted_79, [
-                                    vue.createElementVNode("div", _hoisted_80, [
+                                vue.createElementVNode("div", _hoisted_89, [
+                                    vue.createElementVNode("div", _hoisted_90, [
                                         vue.withDirectives(vue.createElementVNode("input", {
                                             type: "checkbox",
-                                            "onUpdate:modelValue": _cache[25] || (_cache[25] = ($event) => $data.settings.copyToClipboard = $event),
+                                            "onUpdate:modelValue": _cache[27] || (_cache[27] = ($event) => $data.settings.copyToClipboard = $event),
                                             id: "copyToClipboard",
                                             style: {"width": "auto", "margin-right": "8px !important"}
                                         }, null, 512), [
                                             [vue.vModelCheckbox, $data.settings.copyToClipboard]
                                         ]),
-                                        _hoisted_81
+                                        _hoisted_91
                                     ])
                                 ]),
-                                vue.createElementVNode("div", _hoisted_82, [
-                                    vue.createElementVNode("div", _hoisted_83, [
+                                vue.createElementVNode("div", _hoisted_92, [
+                                    vue.createElementVNode("div", _hoisted_93, [
                                         vue.withDirectives(vue.createElementVNode("input", {
                                             type: "checkbox",
-                                            "onUpdate:modelValue": _cache[26] || (_cache[26] = ($event) => $data.settings.showNotification = $event),
+                                            "onUpdate:modelValue": _cache[28] || (_cache[28] = ($event) => $data.settings.showNotification = $event),
                                             id: "showNotification",
                                             style: {"width": "auto", "margin-right": "8px !important"}
                                         }, null, 512), [
                                             [vue.vModelCheckbox, $data.settings.showNotification]
                                         ]),
-                                        _hoisted_84
+                                        _hoisted_94
                                     ])
                                 ])
                             ])
                         ])) : vue.createCommentVNode("", true),
-                        $data.activeSettingTab === "domain" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_85, [
-                            vue.createElementVNode("div", _hoisted_86, [
-                                _hoisted_87,
-                                vue.createElementVNode("div", _hoisted_88, [
+                        $data.activeSettingTab === "domain" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_95, [
+                            vue.createElementVNode("div", _hoisted_96, [
+                                _hoisted_97,
+                                vue.createElementVNode("div", _hoisted_98, [
                                     vue.withDirectives(vue.createElementVNode("textarea", {
-                                        "onUpdate:modelValue": _cache[27] || (_cache[27] = ($event) => $data.settings.disabledDomains = $event),
-                                        placeholder: "每行一个域名，支持正则和通配符，例如：\nexample.com\n*.example.org\nexample.*.com\n/^(www\\.)?example\\.com$/",
+                                        "onUpdate:modelValue": _cache[29] || (_cache[29] = ($event) => $data.settings.disabledDomains = $event),
+                                        placeholder: "每行一个域名，支持正则和通配符，例如：\r\nexample.com\r\n*.example.org\r\nexample.*.com\r\n/^(www\\.)?example\\.com$/",
                                         rows: "6",
                                         class: "domain-textarea"
                                     }, null, 512), [
                                         [vue.vModelText, $data.settings.disabledDomains]
                                     ]),
-                                    _hoisted_89
+                                    _hoisted_99
                                 ])
                             ])
                         ])) : vue.createCommentVNode("", true),
-                        $data.activeSettingTab === "advanced" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_90, [
-                            vue.createElementVNode("div", _hoisted_91, [
-                                _hoisted_92,
-                                _hoisted_93,
-                                vue.createElementVNode("div", _hoisted_94, [
-                                    _hoisted_95,
-                                    vue.createElementVNode("div", _hoisted_96, [
+                        $data.activeSettingTab === "advanced" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_100, [
+                            vue.createElementVNode("div", _hoisted_101, [
+                                _hoisted_102,
+                                _hoisted_103,
+                                vue.createElementVNode("div", _hoisted_104, [
+                                    _hoisted_105,
+                                    vue.createElementVNode("div", _hoisted_106, [
                                         (vue.openBlock(true), vue.createElementBlock(vue.Fragment, null, vue.renderList($data.settings.customCaptchaSelectors, (selector, index) => {
                                             return vue.openBlock(), vue.createElementBlock("div", {
                                                 key: "captcha-" + index,
@@ -4870,26 +4859,26 @@
                                                     type: "text",
                                                     "onUpdate:modelValue": ($event) => $data.settings.customCaptchaSelectors[index] = $event,
                                                     placeholder: "例如: img[src*='captcha']"
-                                                }, null, 8, _hoisted_97), [
+                                                }, null, 8, _hoisted_107), [
                                                     [vue.vModelText, $data.settings.customCaptchaSelectors[index]]
                                                 ]),
                                                 vue.createElementVNode("button", {
                                                     type: "button",
                                                     class: "remove-selector",
                                                     onClick: ($event) => $options.removeSelector("captcha", index)
-                                                }, " × ", 8, _hoisted_98)
+                                                }, " × ", 8, _hoisted_108)
                                             ]);
                                         }), 128)),
                                         vue.createElementVNode("button", {
                                             type: "button",
                                             class: "add-selector",
-                                            onClick: _cache[28] || (_cache[28] = ($event) => $options.addSelector("captcha"))
+                                            onClick: _cache[30] || (_cache[30] = ($event) => $options.addSelector("captcha"))
                                         }, " 添加选择器 ")
                                     ])
                                 ]),
-                                vue.createElementVNode("div", _hoisted_99, [
-                                    _hoisted_100,
-                                    vue.createElementVNode("div", _hoisted_101, [
+                                vue.createElementVNode("div", _hoisted_109, [
+                                    _hoisted_110,
+                                    vue.createElementVNode("div", _hoisted_111, [
                                         (vue.openBlock(true), vue.createElementBlock(vue.Fragment, null, vue.renderList($data.settings.customInputSelectors, (selector, index) => {
                                             return vue.openBlock(), vue.createElementBlock("div", {
                                                 key: "input-" + index,
@@ -4899,35 +4888,35 @@
                                                     type: "text",
                                                     "onUpdate:modelValue": ($event) => $data.settings.customInputSelectors[index] = $event,
                                                     placeholder: "例如: input[name*='captcha']"
-                                                }, null, 8, _hoisted_102), [
+                                                }, null, 8, _hoisted_112), [
                                                     [vue.vModelText, $data.settings.customInputSelectors[index]]
                                                 ]),
                                                 vue.createElementVNode("button", {
                                                     type: "button",
                                                     class: "remove-selector",
                                                     onClick: ($event) => $options.removeSelector("input", index)
-                                                }, " × ", 8, _hoisted_103)
+                                                }, " × ", 8, _hoisted_113)
                                             ]);
                                         }), 128)),
                                         vue.createElementVNode("button", {
                                             type: "button",
                                             class: "add-selector",
-                                            onClick: _cache[29] || (_cache[29] = ($event) => $options.addSelector("input"))
+                                            onClick: _cache[31] || (_cache[31] = ($event) => $options.addSelector("input"))
                                         }, " 添加选择器 ")
                                     ])
                                 ]),
-                                vue.createElementVNode("div", _hoisted_104, [
-                                    _hoisted_105,
-                                    vue.createElementVNode("div", _hoisted_106, [
-                                        vue.createElementVNode("div", _hoisted_107, [
+                                vue.createElementVNode("div", _hoisted_114, [
+                                    _hoisted_115,
+                                    vue.createElementVNode("div", _hoisted_116, [
+                                        vue.createElementVNode("div", _hoisted_117, [
                                             vue.withDirectives(vue.createElementVNode("input", {
                                                 type: "text",
-                                                "onUpdate:modelValue": _cache[30] || (_cache[30] = ($event) => $data.settings.rulesUrl = $event),
+                                                "onUpdate:modelValue": _cache[32] || (_cache[32] = ($event) => $data.settings.rulesUrl = $event),
                                                 placeholder: "https://ghfast.top/https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json"
                                             }, null, 512), [
                                                 [vue.vModelText, $data.settings.rulesUrl]
                                             ]),
-                                            _hoisted_108
+                                            _hoisted_118
                                         ]),
                                         vue.createElementVNode("button", {
                                             type: "button",
@@ -4936,22 +4925,22 @@
                                                 "test-success": $data.rulesLoadStatus === "success",
                                                 "test-error": $data.rulesLoadStatus === "error"
                                             }]),
-                                            onClick: _cache[31] || (_cache[31] = (...args) => $options.reloadRules && $options.reloadRules(...args))
+                                            onClick: _cache[33] || (_cache[33] = (...args) => $options.reloadRules && $options.reloadRules(...args))
                                         }, [
-                                            $data.rulesLoadStatus === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_109, "重新加载规则")) : $data.rulesLoadStatus === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_110)) : $data.rulesLoadStatus === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_111, "加载成功")) : $data.rulesLoadStatus === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_112, "加载失败")) : vue.createCommentVNode("", true)
+                                            $data.rulesLoadStatus === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_119, "重新加载规则")) : $data.rulesLoadStatus === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_120)) : $data.rulesLoadStatus === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_121, "加载成功")) : $data.rulesLoadStatus === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_122, "加载失败")) : vue.createCommentVNode("", true)
                                         ], 2),
-                                        _hoisted_113
+                                        _hoisted_123
                                     ])
                                 ])
                             ])
                         ])) : vue.createCommentVNode("", true)
                     ]),
-                    vue.createElementVNode("div", _hoisted_114, [
+                    vue.createElementVNode("div", _hoisted_124, [
                         vue.createElementVNode("button", {
-                            onClick: _cache[32] || (_cache[32] = (...args) => $options.saveSettings && $options.saveSettings(...args))
+                            onClick: _cache[34] || (_cache[34] = (...args) => $options.saveSettings && $options.saveSettings(...args))
                         }, "保存设置"),
                         vue.createElementVNode("button", {
-                            onClick: _cache[33] || (_cache[33] = (...args) => $options.closeSettings && $options.closeSettings(...args))
+                            onClick: _cache[35] || (_cache[35] = (...args) => $options.closeSettings && $options.closeSettings(...args))
                         }, "取消")
                     ])
                 ])

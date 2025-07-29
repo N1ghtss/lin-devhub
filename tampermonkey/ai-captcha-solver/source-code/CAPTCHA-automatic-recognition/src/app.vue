@@ -69,6 +69,7 @@
                   <option value="openai">OpenAI</option>
                   <option value="gemini">Google Gemini</option>
                   <option value="qwen">阿里云通义千问</option>
+                  <option value="ddddocr">ddddocr</option>
                 </select>
               </div>
 
@@ -259,6 +260,39 @@
                   <small>留空使用默认提示词</small>
                 </div>
               </div>
+
+              <div v-if="settings.apiType === 'ddddocr'">
+                <div class="captcha-settings-item">
+                  <!--                  <label>阿里云通义千问 API Key:</label>-->
+                  <!--                  <div class="input-with-button">-->
+                  <!--                    <input type="text" v-model="settings.qwenKey" placeholder="API Key" />-->
+                  <button
+                      :class="{
+                        'test-loading': apiTestStatus.ddddocr === 'loading',
+                        'test-success': apiTestStatus.ddddocr === 'success',
+                        'test-error': apiTestStatus.ddddocr === 'error',
+                      }"
+                      class="test-api-button"
+                      type="button"
+                      @click="testApiConnection('ddddocr')"
+                  >
+                    <span v-if="apiTestStatus.ddddocr === ''">测试连接</span>
+                    <span v-else-if="apiTestStatus.ddddocr === 'loading'"></span>
+                    <span v-else-if="apiTestStatus.ddddocr === 'success'">成功</span>
+                    <span v-else-if="apiTestStatus.ddddocr === 'error'">失败</span>
+                  </button>
+                </div>
+              </div>
+              <div class="captcha-settings-item">
+                <label>自定义 API 地址 (可选):</label>
+                <input
+                    v-model="settings.ddddocrApiUrl"
+                    placeholder="http://127.0.0.1:23456/"
+                    type="text"
+                />
+                <small>留空使用默认地址</small>
+              </div>
+              <!--              </div>-->
             </div>
           </div>
 
@@ -428,10 +462,10 @@ example.*.com
                     <input
                       type="text"
                       v-model="settings.rulesUrl"
-                      placeholder="https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json"
+                      placeholder="https://ghfast.top/https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json"
                     />
                     <small
-                      >规则文件URL，留空则使用默认URL：https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json</small
+                    >规则文件URL，留空则使用默认URL：https://ghfast.top/https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json</small
                     >
                   </div>
                   <button
@@ -468,7 +502,7 @@ example.*.com
 <script>
 import packageJson from "../package.json";
 import axios from "axios";
-import { DEFAULT_PROMPT } from "./assets/prompts.js";
+import {DEFAULT_PROMPT} from "./assets/prompts.js";
 
 export default {
   data() {
@@ -481,6 +515,7 @@ export default {
         openai: "", // 可能的值：'', 'loading', 'success', 'error'
         gemini: "", // 可能的值：'', 'loading', 'success', 'error'
         qwen: "", // 可能的值：'', 'loading', 'success', 'error'
+        ddddocr: "", // 可能的值：'', 'loading', 'success', 'error'
       },
       // 验证码规则配置
       rules: [],
@@ -504,10 +539,15 @@ export default {
         qwenApiUrl: "",
         qwenModel: "",
         qwenPrompt: DEFAULT_PROMPT, // 自定义提示词，默认填充
+        // ddddocr设置
+        ddddocrKey: "",
+        ddddocrApiUrl: "",
+        ddddocrModel: "",
+        ddddocrPrompt: DEFAULT_PROMPT, // 自定义提示词，默认填充
         // 自动识别设置
-        autoRecognize: false, // 是否启用自动识别
+        autoRecognize: true, // 是否启用自动识别
         // 剪贴板设置
-        copyToClipboard: true, // 是否自动复制到剪贴板
+        copyToClipboard: false, // 是否自动复制到剪贴板
         // 通知设置
         showNotification: true, // 是否显示右上角通知，默认开启
         // 自定义选择器
@@ -517,7 +557,7 @@ export default {
         disabledDomains: "", // 不启用验证码功能的网站域名列表，支持正则和通配符
         // 规则URL
         rulesUrl:
-          "https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json", // 规则文件URL
+            "https://ghfast.top/https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json", // 规则文件URL
       },
       // 是否显示设置面板
       showSettings: false,
@@ -537,6 +577,7 @@ export default {
           'img[style="z-index: 2; position: absolute; bottom: -11px; left: 206px; width: 88px; height: 40px;"]',
           '.authcode img[id="authImage"]',
           'img[class="verification-img"]',
+          'img[class*="login-code-img"]',
           'img[name="imgCaptcha"]',
         ],
         // 相关输入框选择器 (通常在验证码图片附近的输入框)
@@ -571,6 +612,8 @@ export default {
           return "Google Gemini";
         case "qwen":
           return "阿里云通义千问";
+        case "ddddocr":
+          return "ddddocr";
         default:
           return "未知";
       }
@@ -631,7 +674,7 @@ export default {
         // 获取规则URL，如果为空则使用默认URL
         const rulesUrl =
           this.settings.rulesUrl ||
-          "https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json";
+            "https://ghfast.top/https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json";
 
         // 从rules.json文件加载规则
         const response = await this.request({
@@ -745,6 +788,10 @@ export default {
             // console.log("使用阿里云通义千问API识别验证码");
             result = await this.recognizeWithQwen(base64Image);
             break;
+          case "ddddocr":
+            // console.log("使用阿里云通义千问API识别验证码");
+            result = await this.recognizeWithDdddocr(base64Image);
+            break;
           default:
             // console.error("未知的API类型:", this.settings.apiType);
             this.showToast(`未知的API类型: ${this.settings.apiType}`, "error");
@@ -781,6 +828,8 @@ export default {
           return !!this.settings.geminiKey;
         case "qwen":
           return !!this.settings.qwenKey;
+        case "ddddocr":
+          return !!this.settings.ddddocrApiUrl;
         default:
           return false;
       }
@@ -798,7 +847,7 @@ export default {
           // 直接从canvas获取base64数据
           try {
             const base64Data = element.toDataURL("image/png").split(",")[1];
-            
+
             // 检查 base64 数据是否有效
             if (!base64Data || base64Data.length < 100) {
               console.error("生成的canvas base64数据无效或过短");
@@ -807,7 +856,7 @@ export default {
                 message: "Canvas数据转换失败或内容为空。请刷新验证码后重试。",
               };
             }
-            
+
             // console.log("Canvas成功转换为base64");
             return {
               success: true,
@@ -821,7 +870,7 @@ export default {
             };
           }
         }
-        
+
         // 以下是处理img元素的逻辑
         // 检查图片来源
         const imgSrc = element.src;
@@ -1088,6 +1137,28 @@ export default {
         const text = response.data.choices[0].message.content;
         // 只保留数字、字母和负号
         return text.replace(/[^a-zA-Z0-9\-]/g, "");
+      }
+      return "";
+    },
+
+    /**
+     * 使用ddddocr api
+     */
+    async recognizeWithDdddocr(base64Image) {
+      const apiUrl =
+          this.settings.qwenApiUrl ||
+          "http://127.0.0.1:23456/";
+      const datas = {
+        "ImageBase64": String(base64Image),
+      }
+      const response = await this.request({
+        method: "POST",
+        url: apiUrl + "identify_GeneralCAPTCHA",
+        data: JSON.stringify(datas),
+      });
+      if (response.data) {
+        // const text = response.data.choices[0].message.content;
+        return response.data.result;
       }
       return "";
     },
@@ -1704,7 +1775,7 @@ export default {
       // console.log("初始化验证码识别插件");
       this.registerMenuCommands();
       this.loadSettings();
-      
+
       // 检查是否需要自动获取云端配置（每天首次使用）
       this.checkAndFetchCloudConfig();
 
@@ -2073,6 +2144,11 @@ export default {
           if (response && response.data) {
             this.apiTestStatus[apiType] = "success";
           }
+        } else if (apiType === "ddddocr") {
+          const data = await this.recognizeWithDdddocr(testBase64Image);
+          if (data) {
+            this.apiTestStatus[apiType] = "success";
+          }
         }
 
         // 3 秒后重置状态
@@ -2398,10 +2474,10 @@ export default {
     findInputFieldForCaptcha(captchaImg, customSelectors) {
       // 定义基础过滤条件，排除hidden类型的输入框
       const baseFilter = ':not([type="hidden"])';
-      
+
       // 确定使用的选择器列表
       let inputSelectors = customSelectors || [...this.config.inputSelectors];
-      
+
       // 处理每个选择器，确保都应用了基础过滤条件
       inputSelectors = inputSelectors.map(selector => {
         // 如果选择器已经包含:not([type="hidden"])，则不重复添加
@@ -2421,7 +2497,7 @@ export default {
           }
           return `${selector}${baseFilter}`;
         });
-        
+
         inputSelectors = inputSelectors.concat(filteredCustomSelectors.filter(s => s));
       }
 
@@ -2578,7 +2654,7 @@ export default {
       try {
         // 获取当前日期（格式：YYYY-MM-DD）
         const today = new Date().toISOString().split('T')[0];
-        
+
         // 从存储中获取上次更新配置的日期
         let lastConfigUpdate;
         if (typeof GM_getValue !== "undefined") {
@@ -2586,22 +2662,22 @@ export default {
         } else {
           lastConfigUpdate = localStorage.getItem("lastConfigUpdate");
         }
-        
+
         // 如果没有记录或者不是今天，则更新配置
         if (!lastConfigUpdate || lastConfigUpdate !== today) {
           // 显示提示
           this.showToast("正在获取最新云端配置...", "info");
-          
+
           // 加载最新规则
           await this.loadRules();
-          
+
           // 记录更新日期
           if (typeof GM_setValue !== "undefined") {
             GM_setValue("lastConfigUpdate", today);
           } else {
             localStorage.setItem("lastConfigUpdate", today);
           }
-          
+
           this.showToast("云端配置更新完成", "success");
         }
       } catch (error) {
@@ -2609,7 +2685,7 @@ export default {
         // 失败时不显示提示，避免影响用户体验
       }
     },
-    
+
     /**
      * 优化Canvas验证码图像
      * @param {HTMLCanvasElement} canvasElement - canvas元素
