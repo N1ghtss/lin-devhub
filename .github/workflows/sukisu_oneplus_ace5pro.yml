@@ -26,7 +26,7 @@ on:
         default: true
         type: boolean
 
-
+# 来源：https://github.com/HanKuCha/oneplus13_a5p_sukisu/blob/main/.github/workflows/oneplus_ace5_pro.yml
 
 
 jobs:
@@ -51,8 +51,8 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config --global user.name "Futaba"
-          git config --global user.email "3199167602@qq.com"
+          git config --global user.name "knight"
+          git config --global user.email "635349188@qq.com"
 
       - name: Install dependencies
         run: |
