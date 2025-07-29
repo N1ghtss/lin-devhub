@@ -1,13 +1,13 @@
 // ==UserScript==
-// @name         AI验证码自动识别填充
+// @name         AI验证码自动识别填充-自用版
 // @namespace    https://github.com/ezyshu/UserScript
 // @version      9.9.9
 // @author       knight
 // @description  自动识别网页上的验证码并填充到输入框中，点击识别图标触发识别。
 // @license      Apache-2.0
 // @icon         https://raw.githubusercontent.com/ezyshu/UserScript/refs/heads/main/CAPTCHA-automatic-recognition/src/assets/logo.png
-// @downloadURL  https://raw.githubusercontent.com/N1ghtss/lin-devhub/refs/heads/main/tampermonkey/ai-captcha-solver/source-code/CAPTCHA-automatic-recognition/dist/CAPTCHA-automatic-recognition.user.js
-// @updateURL    https://raw.githubusercontent.com/N1ghtss/lin-devhub/refs/heads/main/tampermonkey/ai-captcha-solver/source-code/CAPTCHA-automatic-recognition/dist/CAPTCHA-automatic-recognition.user.js
+// @downloadURL  https://raw.githubusercontent.com/N1ghtss/lin-devhub/refs/heads/main/tampermonkey/ai-captcha-solver/CAPTCHA-automatic-recognition/dist/CAPTCHA-automatic-recognition.user.js
+// @updateURL    https://raw.githubusercontent.com/N1ghtss/lin-devhub/refs/heads/main/tampermonkey/ai-captcha-solver/CAPTCHA-automatic-recognition/dist/CAPTCHA-automatic-recognition.user.js
 // @match        *://*/*
 // @require      https://unpkg.com/vue@3.4.38/dist/vue.global.prod.js
 // @grant        GM_addStyle
@@ -4758,12 +4758,12 @@
                                 $data.settings.apiType === "ddddocr" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_74, [
                                     vue.createElementVNode("div", _hoisted_75, [
                                         vue.createElementVNode("button", {
-                                            type: "button",
-                                            class: vue.normalizeClass(["test-api-button", {
+                                            class: vue.normalizeClass([{
                                                 "test-loading": $data.apiTestStatus.ddddocr === "loading",
                                                 "test-success": $data.apiTestStatus.ddddocr === "success",
                                                 "test-error": $data.apiTestStatus.ddddocr === "error"
-                                            }]),
+                                            }, "test-api-button"]),
+                                            type: "button",
                                             onClick: _cache[24] || (_cache[24] = ($event) => $options.testApiConnection("ddddocr"))
                                         }, [
                                             $data.apiTestStatus.ddddocr === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_76, "测试连接")) : $data.apiTestStatus.ddddocr === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_77)) : $data.apiTestStatus.ddddocr === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_78, "成功")) : $data.apiTestStatus.ddddocr === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_79, "失败")) : vue.createCommentVNode("", true)
@@ -4773,9 +4773,9 @@
                                 vue.createElementVNode("div", _hoisted_80, [
                                     _hoisted_81,
                                     vue.withDirectives(vue.createElementVNode("input", {
-                                        type: "text",
                                         "onUpdate:modelValue": _cache[25] || (_cache[25] = ($event) => $data.settings.ddddocrApiUrl = $event),
-                                        placeholder: "http://127.0.0.1:23456/"
+                                        placeholder: "http://127.0.0.1:23456/",
+                                        type: "text"
                                     }, null, 512), [
                                         [vue.vModelText, $data.settings.ddddocrApiUrl]
                                     ]),
