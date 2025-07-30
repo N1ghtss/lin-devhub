@@ -579,11 +579,13 @@ export default {
           'img[class="verification-img"]',
           'img[class*="login-code-img"]',
           'img[name="imgCaptcha"]',
+          'img[id="ctrlValidateCode_imgCode"]',
         ],
         // 相关输入框选择器 (通常在验证码图片附近的输入框)
         inputSelectors: [
           'input[name*="captcha"]',
           'input[name*="verify"]',
+          'input[name="txtValidate"]',
           'input[placeholder="请输入图片验证码"]',
           'input[id="authcode"]',
           'input[placeholder*="captcha"]',
