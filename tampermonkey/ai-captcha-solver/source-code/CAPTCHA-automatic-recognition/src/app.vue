@@ -381,7 +381,7 @@ example.*.com
                 <span
                   >高级设置
                   <a
-                    href="https://github.com/ezyshu/UserScript/tree/main/CAPTCHA-automatic-recognition/docs/advanced-settings.md"
+                      href="https://github.com/anghunk/UserScript/tree/main/CAPTCHA-automatic-recognition/docs/advanced-settings.md"
                     target="_blank"
                     class="tutorial-link"
                     >教程</a
@@ -462,10 +462,10 @@ example.*.com
                     <input
                       type="text"
                       v-model="settings.rulesUrl"
-                      placeholder="https://ghfast.top/https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json"
+                      placeholder="https://ghfast.top/https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json"
                     />
                     <small
-                    >规则文件URL，留空则使用默认URL：https://ghfast.top/https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json</small
+                    >规则文件URL，留空则使用默认URL：https://ghfast.top/https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json</small
                     >
                   </div>
                   <button
@@ -557,7 +557,7 @@ export default {
         disabledDomains: "", // 不启用验证码功能的网站域名列表，支持正则和通配符
         // 规则URL
         rulesUrl:
-            "https://ghfast.top/https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json", // 规则文件URL
+            "https://ghfast.top/https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json", // 规则文件URL
       },
       // 是否显示设置面板
       showSettings: false,
@@ -676,7 +676,7 @@ export default {
         // 获取规则URL，如果为空则使用默认URL
         const rulesUrl =
           this.settings.rulesUrl ||
-            "https://ghfast.top/https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json";
+            "https://ghfast.top/https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json";
 
         // 从rules.json文件加载规则
         const response = await this.request({

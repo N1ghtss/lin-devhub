@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         AI验证码自动识别填充-自用版
-// @namespace    https://github.com/ezyshu/UserScript
+// @namespace    https://github.com/anghunk/UserScript
 // @version      1.0.2
 // @author       knight
 // @description  自动识别网页上的验证码并填充到输入框中，点击识别图标触发识别。
 // @license      Apache-2.0
-// @icon         https://raw.githubusercontent.com/ezyshu/UserScript/refs/heads/main/CAPTCHA-automatic-recognition/src/assets/logo.png
+// @icon         https://raw.githubusercontent.com/anghunk/UserScript/refs/heads/main/CAPTCHA-automatic-recognition/src/assets/logo.png
 // @downloadURL  https://raw.githubusercontent.com/N1ghtss/lin-devhub/refs/heads/main/tampermonkey/ai-captcha-solver/CAPTCHA-automatic-recognition.user.js
 // @updateURL    https://raw.githubusercontent.com/N1ghtss/lin-devhub/refs/heads/main/tampermonkey/ai-captcha-solver/CAPTCHA-automatic-recognition.user.js
 // @match        *://*/*
@@ -2554,7 +2554,7 @@
           disabledDomains: "",
           // 不启用验证码功能的网站域名列表，支持正则和通配符
           // 规则URL
-          rulesUrl: "https://ghfast.top/https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json"
+          rulesUrl: "https://ghfast.top/https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json"
           // 规则文件URL
         },
         // 是否显示设置面板
@@ -2659,7 +2659,7 @@
         try {
           this.rulesLoadStatus = "loading";
           let rulesData;
-          const rulesUrl = this.settings.rulesUrl || "https://ghfast.top/https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json";
+          const rulesUrl = this.settings.rulesUrl || "https://ghfast.top/https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json";
           const response = await this.request({
             method: "GET",
             url: rulesUrl,
@@ -4361,7 +4361,7 @@
     /* @__PURE__ */ vue.createElementVNode("span", null, [
       /* @__PURE__ */ vue.createTextVNode("高级设置 "),
       /* @__PURE__ */ vue.createElementVNode("a", {
-        href: "https://github.com/ezyshu/UserScript/tree/main/CAPTCHA-automatic-recognition/docs/advanced-settings.md",
+        href: "https://github.com/anghunk/UserScript/tree/main/CAPTCHA-automatic-recognition/docs/advanced-settings.md",
         target: "_blank",
         class: "tutorial-link"
       }, "教程")
@@ -4382,7 +4382,7 @@
   const _hoisted_115 = /* @__PURE__ */ vue.createElementVNode("label", null, "验证码规则管理：", -1);
   const _hoisted_116 = { class: "rules-management" };
   const _hoisted_117 = { class: "rules-url-input" };
-  const _hoisted_118 = /* @__PURE__ */ vue.createElementVNode("small", null, "规则文件URL，留空则使用默认URL：https://ghfast.top/https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json", -1);
+  const _hoisted_118 = /* @__PURE__ */ vue.createElementVNode("small", null, "规则文件URL，留空则使用默认URL：https://ghfast.top/https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json", -1);
   const _hoisted_119 = { key: 0 };
   const _hoisted_120 = { key: 1 };
   const _hoisted_121 = { key: 2 };
@@ -4787,7 +4787,7 @@
                       vue.withDirectives(vue.createElementVNode("input", {
                         type: "text",
                         "onUpdate:modelValue": _cache[32] || (_cache[32] = ($event) => $data.settings.rulesUrl = $event),
-                        placeholder: "https://ghfast.top/https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json"
+                        placeholder: "https://ghfast.top/https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json"
                       }, null, 512), [
                         [vue.vModelText, $data.settings.rulesUrl]
                       ]),
