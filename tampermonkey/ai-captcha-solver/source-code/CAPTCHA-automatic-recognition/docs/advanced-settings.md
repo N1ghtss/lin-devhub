@@ -69,7 +69,7 @@ input[name="captcha"]
 
 您可以在高级设置面板中设置自定义的规则文件URL。默认URL为：
 ```
-https://raw.githubusercontent.com/ezyshu/UserScript/main/CAPTCHA-automatic-recognition/rules.json
+https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json
 ```
 
 如果您想使用自己的规则文件，可以修改此URL。如果留空，系统将使用默认URL。

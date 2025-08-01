@@ -1,10 +1,10 @@
 ## CAPTCHA-automatic-recognition（AI 验证码自动识别填充）
 
-> 如果有网站没有适配，或者不触发等问题，请联系我手动适配，在 [Issue](https://github.com/ezyshu/UserScript/issues) 中反馈，尽可能携带网站域名。
+> 如果有网站没有适配，或者不触发等问题，请联系我手动适配，在 [Issue](https://github.com/anghunk/UserScript/issues) 中反馈，尽可能携带网站域名。
 
-[GitHub](https://github.com/ezyshu/UserScript/tree/main/CAPTCHA-automatic-recognition) |
+[GitHub](https://github.com/anghunk/UserScript/tree/main/CAPTCHA-automatic-recognition) |
 [Greasyfork](https://greasyfork.org/scripts/540822) |
-[更新日志](https://github.com/ezyshu/UserScript/tree/main/CAPTCHA-automatic-recognition/version-log.md)
+[更新日志](https://github.com/anghunk/UserScript/tree/main/CAPTCHA-automatic-recognition/version-log.md)
 
 ![Greasy Fork Version](https://img.shields.io/greasyfork/v/540822)
 ![Greasy Fork Downloads](https://img.shields.io/greasyfork/dt/540822)
@@ -44,11 +44,11 @@ AI 自动识别网页验证码，支持各大主流厂商，限制视觉模型�
 
 ### 4. LICENSE
 
-本项目基于 Apache-2.0 许可证开源，详细信息请查看 [LICENSE](https://github.com/ezyshu/UserScript/blob/main/CAPTCHA-automatic-recognition/LICENSE) 文件。
+本项目基于 Apache-2.0 许可证开源，详细信息请查看 [LICENSE](https://github.com/anghunk/UserScript/blob/main/CAPTCHA-automatic-recognition/LICENSE) 文件。
 
 
 ### 5. 免责声明
 
 本项目免费且开放源代码，但不保证其绝对完善无误，请您在决定使用前自行评估风险。同时，务必遵守所有适用法律法规，严禁任何形式的滥用行为。
 
-如果有任何侵权行为，请联系 [ezyshu](https://github.com/ezyshu)，将会及时处理。
+如果有任何侵权行为，请联系 [anghunk](https://github.com/anghunk)，将会及时处理。
