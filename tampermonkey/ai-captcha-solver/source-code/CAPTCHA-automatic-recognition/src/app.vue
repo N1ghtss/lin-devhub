@@ -502,7 +502,7 @@ example.*.com
 <script>
 import packageJson from "../package.json";
 import axios from "axios";
-import {DEFAULT_PROMPT} from "./assets/prompts.js";
+import { DEFAULT_PROMPT } from "./assets/prompts.js";
 
 export default {
   data() {
