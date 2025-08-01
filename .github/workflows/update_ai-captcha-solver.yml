@@ -22,7 +22,7 @@ jobs:
           git switch upstream/ai-captcha-solver
           TARGET_DIR="tampermonkey/ai-captcha-solver/source-code"
           TEMP_CLONE_DIR=".temp_sparse_checkout"
-          REMOTE_REPO="https://github.com/ezyshu/UserScript.git"
+          REMOTE_REPO="https://github.com/anghunk/UserScript.git"
           SUBDIR="CAPTCHA-automatic-recognition"
           
           echo "📦 Creating temporary directory and initializing sparse-checkout..."
