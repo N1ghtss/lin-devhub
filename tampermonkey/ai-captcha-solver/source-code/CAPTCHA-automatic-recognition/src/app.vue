@@ -528,8 +528,8 @@ import Mustache from "mustache";
 import axios from "axios";
 import {DEFAULT_PROMPT} from "./assets/prompts.js";
 
-const ddddocrApiDefaultTemplate = JSON.stringify({img: "{{{img}}}"}, null, 2);
-const ddddocrApiDefaultUrl = "http://127.0.0.1:23456/ocr";
+const ddddocrApiDefaultTemplate = JSON.stringify({ImageBase64: "{{{img}}}"}, null, 2);
+const ddddocrApiDefaultUrl = "http://127.0.0.1:23456/identify_GeneralCAPTCHA";
 export default {
   data() {
     return {
