@@ -1929,7 +1929,6 @@ export default {
           setTimeout(initPlugin, 1000);
         });
       }
-      this.openSettings()
     },
 
     /**
