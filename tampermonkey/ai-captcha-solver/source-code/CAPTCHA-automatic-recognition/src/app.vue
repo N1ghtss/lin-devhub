@@ -263,9 +263,6 @@
 
               <div v-if="settings.apiType === 'ddddocr'">
                 <div class="captcha-settings-item">
-                  <!--                  <label>阿里云通义千问 API Key:</label>-->
-                  <!--                  <div class="input-with-button">-->
-                  <!--                    <input type="text" v-model="settings.qwenKey" placeholder="API Key" />-->
                   <button
                       :class="{
                         'test-loading': apiTestStatus.ddddocr === 'loading',
@@ -282,17 +279,43 @@
                     <span v-else-if="apiTestStatus.ddddocr === 'error'">失败</span>
                   </button>
                 </div>
+                <div class="captcha-settings-item">
+                  <label>自定义 API 地址 (可选):</label>
+                  <div class="textarea-with-button">
+                    <input
+                        v-model="settings.ddddocrApiUrl"
+                        :placeholder="ddddocrApiDefaultUrl"
+                        type="text"
+                    />
+                    <button
+                        class="use-default-prompt"
+                        type="button"
+                        @click="settings.ddddocrApiUrl = ddddocrApiDefaultUrl"
+                    >
+                      默认
+                    </button>
+                  </div>
+                  <small>留空使用默认地址</small>
+                </div>
+                <div class="captcha-settings-item">
+                  <label>自定义 Request 请求模板:</label>
+                  <div class="textarea-with-button">
+                  <textarea
+                      ref="jsontextareaRef"
+                      v-model="settings.ddddocrApiTemplate"
+                      @input="autoResize"
+                  ></textarea>
+                    <button
+                        class="use-default-prompt"
+                        type="button"
+                        @click="settings.ddddocrApiTemplate = ddddocrApiDefaultTemplate"
+                    >
+                      使用默认
+                    </button>
+                  </div>
+                  <small>留空使用默认模板</small>
+                </div>
               </div>
-              <div class="captcha-settings-item">
-                <label>自定义 API 地址 (可选):</label>
-                <input
-                    v-model="settings.ddddocrApiUrl"
-                    :placeholder="ddddocrApiDefaultUrl"
-                    type="text"
-                />
-                <small>留空使用默认地址</small>
-              </div>
-              <!--              </div>-->
             </div>
           </div>
 
@@ -501,17 +524,21 @@ example.*.com
 
 <script>
 import packageJson from "../package.json";
+import Mustache from "mustache";
 import axios from "axios";
 import {DEFAULT_PROMPT} from "./assets/prompts.js";
 
+const ddddocrApiDefaultTemplate = JSON.stringify({img: "{{{img}}}"}, null, 2);
+const ddddocrApiDefaultUrl = "http://127.0.0.1:23456/ocr";
 export default {
   data() {
     return {
       packageJson: packageJson,
       // 导入的常量
       DEFAULT_PROMPT,
+      ddddocrApiDefaultTemplate,
       // docker run --name ddddocr-server  -p 23456:80  -d jeanhua/ocr-server:latest
-      ddddocrApiDefaultUrl: "http://127.0.0.1:23456/ocr",
+      ddddocrApiDefaultUrl,
       // API 测试状态
       apiTestStatus: {
         openai: "", // 可能的值：'', 'loading', 'success', 'error'
@@ -525,7 +552,7 @@ export default {
       rulesLoadStatus: "", // 可能的值：'', 'loading', 'success', 'error'
       // 设置项
       settings: {
-        apiType: "openai", // openai, gemini, qwen
+        apiType: "ddddocr", // openai, gemini, qwen, ddddocr
         // OpenAI 设置
         openaiKey: "",
         openaiApiUrl: "",
@@ -543,9 +570,10 @@ export default {
         qwenPrompt: DEFAULT_PROMPT, // 自定义提示词，默认填充
         // ddddocr设置
         ddddocrKey: "",
-        ddddocrApiUrl: "",
+        ddddocrApiUrl: ddddocrApiDefaultUrl,
         ddddocrModel: "",
-        ddddocrPrompt: DEFAULT_PROMPT, // 自定义提示词，默认填充
+        ddddocrApiTemplate: ddddocrApiDefaultTemplate,
+        // ddddocrPrompt: DEFAULT_PROMPT, // 自定义提示词，默认填充
         // 自动识别设置
         autoRecognize: true, // 是否启用自动识别
         // 剪贴板设置
@@ -1152,13 +1180,14 @@ export default {
       const apiUrl =
           this.settings.ddddocrApiUrl ||
           this.ddddocrApiDefaultUrl;
-      const datas = {
+      const base = {
         "img": String(base64Image),
       }
+      const json = Mustache.render(this.settings.ddddocrApiTemplate, base);
       const response = await this.request({
         method: "POST",
         url: apiUrl,
-        data: JSON.stringify(datas),
+        data: json,
         headers: {
           "Content-Type": "application/json",
         },
@@ -1900,6 +1929,7 @@ export default {
           setTimeout(initPlugin, 1000);
         });
       }
+      this.openSettings()
     },
 
     /**
@@ -2745,6 +2775,14 @@ export default {
         };
       }
     },
+    autoResize() {
+      const ta = this.$refs.jsontextareaRef
+      if (ta) {
+        ta.value = JSON.stringify(JSON.parse(ta.value), null, 2);
+        ta.style.height = 'auto' // 重置高度，才能正确计算 scrollHeight
+        ta.style.height = ta.scrollHeight + 'px'
+      }
+    }
   },
   mounted() {
     // console.log("验证码识别插件已挂载");
@@ -2770,6 +2808,9 @@ export default {
     } catch (error) {
       console.error("验证码识别插件挂载失败:", error);
     }
+    this.$nextTick(() => {
+      this.autoResize();
+    });
   },
   created() {
     // console.log("验证码识别插件已创建");
@@ -2822,5 +2863,10 @@ export default {
       console.error("验证码识别插件创建阶段出错:", error);
     }
   },
+  watch: {
+    'settings.ddddocrApiTemplate'(newVal, oldVal) {
+      this.autoResize()
+    }
+  }
 };
 </script>
