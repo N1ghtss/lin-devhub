@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         AI验证码自动识别填充-自用版
 // @namespace    https://github.com/anghunk/UserScript
-// @version      1.0.5
+// @version      1.0.6
 // @author       knight
 // @description  自动识别网页上的验证码并填充到输入框中，点击识别图标触发识别。
 // @license      Apache-2.0
 // @icon         https://raw.githubusercontent.com/anghunk/UserScript/refs/heads/main/CAPTCHA-automatic-recognition/src/assets/logo.png
-// @downloadURL  https://raw.githubusercontent.com/N1ghtss/lin-devhub/refs/heads/main/tampermonkey/ai-captcha-solver/CAPTCHA-automatic-recognition.user.js
-// @updateURL    https://raw.githubusercontent.com/N1ghtss/lin-devhub/refs/heads/main/tampermonkey/ai-captcha-solver/CAPTCHA-automatic-recognition.user.js
+// @downloadURL  https://raw.githubusercontent.com/N1ghtss/multi-projects/refs/heads/main/tampermonkey/ai-captcha-solver/CAPTCHA-automatic-recognition.user.js
+// @updateURL    https://raw.githubusercontent.com/N1ghtss/multi-projects/refs/heads/main/tampermonkey/ai-captcha-solver/CAPTCHA-automatic-recognition.user.js
 // @match        *://*/*
 // @require      https://unpkg.com/vue@3.4.38/dist/vue.global.prod.js
 // @grant        GM_addStyle
@@ -23,7 +23,7 @@
   'use strict';
 
   const name = "CAPTCHA-automatic-recognition";
-  const version = "1.0.5";
+  const version = "1.0.6";
   const author = "knight";
   const description = "Automatically recognize the CAPTCHA on the webpage and fill it into the input box, click the recognition icon to trigger recognition.";
   const type = "module";
