@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AI验证码自动识别填充-自用版
 // @namespace    https://github.com/anghunk/UserScript
-// @version      1.0.6
+// @version      1.0.7
 // @author       knight
 // @description  自动识别网页上的验证码并填充到输入框中，点击识别图标触发识别。
 // @license      Apache-2.0
@@ -23,7 +23,7 @@
   'use strict';
 
   const name = "CAPTCHA-automatic-recognition";
-  const version = "1.0.6";
+  const version = "1.0.7";
   const author = "knight";
   const description = "Automatically recognize the CAPTCHA on the webpage and fill it into the input box, click the recognition icon to trigger recognition.";
   const type = "module";
@@ -34,11 +34,13 @@
     preview: "vite preview"
   };
   const dependencies = {
+    axios: "^1.6.2",
+    mustache: "^4.2.0",
     vue: "^3.4.27",
-    webdav: "^5.7.1",
-    axios: "^1.6.2"
+    webdav: "^5.7.1"
   };
   const devDependencies = {
+    "@types/mustache": "^4.2.6",
     "@vitejs/plugin-vue": "^5.0.4",
     less: "^4.1.0",
     "less-loader": "^8.0.0",
@@ -57,6 +59,461 @@
     dependencies,
     devDependencies
   };
+  /*!
+   * mustache.js - Logic-less {{mustache}} templates with JavaScript
+   * http://github.com/janl/mustache.js
+   */
+  var objectToString = Object.prototype.toString;
+  var isArray$1 = Array.isArray || function isArrayPolyfill(object) {
+    return objectToString.call(object) === "[object Array]";
+  };
+  function isFunction$1(object) {
+    return typeof object === "function";
+  }
+  function typeStr(obj) {
+    return isArray$1(obj) ? "array" : typeof obj;
+  }
+  function escapeRegExp(string) {
+    return string.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&");
+  }
+  function hasProperty(obj, propName) {
+    return obj != null && typeof obj === "object" && propName in obj;
+  }
+  function primitiveHasOwnProperty(primitive, propName) {
+    return primitive != null && typeof primitive !== "object" && primitive.hasOwnProperty && primitive.hasOwnProperty(propName);
+  }
+  var regExpTest = RegExp.prototype.test;
+  function testRegExp(re, string) {
+    return regExpTest.call(re, string);
+  }
+  var nonSpaceRe = /\S/;
+  function isWhitespace(string) {
+    return !testRegExp(nonSpaceRe, string);
+  }
+  var entityMap = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+    "/": "&#x2F;",
+    "`": "&#x60;",
+    "=": "&#x3D;"
+  };
+  function escapeHtml(string) {
+    return String(string).replace(/[&<>"'`=\/]/g, function fromEntityMap(s) {
+      return entityMap[s];
+    });
+  }
+  var whiteRe = /\s*/;
+  var spaceRe = /\s+/;
+  var equalsRe = /\s*=/;
+  var curlyRe = /\s*\}/;
+  var tagRe = /#|\^|\/|>|\{|&|=|!/;
+  function parseTemplate(template, tags) {
+    if (!template)
+      return [];
+    var lineHasNonSpace = false;
+    var sections = [];
+    var tokens = [];
+    var spaces = [];
+    var hasTag = false;
+    var nonSpace = false;
+    var indentation = "";
+    var tagIndex = 0;
+    function stripSpace() {
+      if (hasTag && !nonSpace) {
+        while (spaces.length)
+          delete tokens[spaces.pop()];
+      } else {
+        spaces = [];
+      }
+      hasTag = false;
+      nonSpace = false;
+    }
+    var openingTagRe, closingTagRe, closingCurlyRe;
+    function compileTags(tagsToCompile) {
+      if (typeof tagsToCompile === "string")
+        tagsToCompile = tagsToCompile.split(spaceRe, 2);
+      if (!isArray$1(tagsToCompile) || tagsToCompile.length !== 2)
+        throw new Error("Invalid tags: " + tagsToCompile);
+      openingTagRe = new RegExp(escapeRegExp(tagsToCompile[0]) + "\\s*");
+      closingTagRe = new RegExp("\\s*" + escapeRegExp(tagsToCompile[1]));
+      closingCurlyRe = new RegExp("\\s*" + escapeRegExp("}" + tagsToCompile[1]));
+    }
+    compileTags(tags || mustache.tags);
+    var scanner = new Scanner(template);
+    var start, type2, value, chr, token, openSection;
+    while (!scanner.eos()) {
+      start = scanner.pos;
+      value = scanner.scanUntil(openingTagRe);
+      if (value) {
+        for (var i = 0, valueLength = value.length; i < valueLength; ++i) {
+          chr = value.charAt(i);
+          if (isWhitespace(chr)) {
+            spaces.push(tokens.length);
+            indentation += chr;
+          } else {
+            nonSpace = true;
+            lineHasNonSpace = true;
+            indentation += " ";
+          }
+          tokens.push(["text", chr, start, start + 1]);
+          start += 1;
+          if (chr === "\n") {
+            stripSpace();
+            indentation = "";
+            tagIndex = 0;
+            lineHasNonSpace = false;
+          }
+        }
+      }
+      if (!scanner.scan(openingTagRe))
+        break;
+      hasTag = true;
+      type2 = scanner.scan(tagRe) || "name";
+      scanner.scan(whiteRe);
+      if (type2 === "=") {
+        value = scanner.scanUntil(equalsRe);
+        scanner.scan(equalsRe);
+        scanner.scanUntil(closingTagRe);
+      } else if (type2 === "{") {
+        value = scanner.scanUntil(closingCurlyRe);
+        scanner.scan(curlyRe);
+        scanner.scanUntil(closingTagRe);
+        type2 = "&";
+      } else {
+        value = scanner.scanUntil(closingTagRe);
+      }
+      if (!scanner.scan(closingTagRe))
+        throw new Error("Unclosed tag at " + scanner.pos);
+      if (type2 == ">") {
+        token = [type2, value, start, scanner.pos, indentation, tagIndex, lineHasNonSpace];
+      } else {
+        token = [type2, value, start, scanner.pos];
+      }
+      tagIndex++;
+      tokens.push(token);
+      if (type2 === "#" || type2 === "^") {
+        sections.push(token);
+      } else if (type2 === "/") {
+        openSection = sections.pop();
+        if (!openSection)
+          throw new Error('Unopened section "' + value + '" at ' + start);
+        if (openSection[1] !== value)
+          throw new Error('Unclosed section "' + openSection[1] + '" at ' + start);
+      } else if (type2 === "name" || type2 === "{" || type2 === "&") {
+        nonSpace = true;
+      } else if (type2 === "=") {
+        compileTags(value);
+      }
+    }
+    stripSpace();
+    openSection = sections.pop();
+    if (openSection)
+      throw new Error('Unclosed section "' + openSection[1] + '" at ' + scanner.pos);
+    return nestTokens(squashTokens(tokens));
+  }
+  function squashTokens(tokens) {
+    var squashedTokens = [];
+    var token, lastToken;
+    for (var i = 0, numTokens = tokens.length; i < numTokens; ++i) {
+      token = tokens[i];
+      if (token) {
+        if (token[0] === "text" && lastToken && lastToken[0] === "text") {
+          lastToken[1] += token[1];
+          lastToken[3] = token[3];
+        } else {
+          squashedTokens.push(token);
+          lastToken = token;
+        }
+      }
+    }
+    return squashedTokens;
+  }
+  function nestTokens(tokens) {
+    var nestedTokens = [];
+    var collector = nestedTokens;
+    var sections = [];
+    var token, section;
+    for (var i = 0, numTokens = tokens.length; i < numTokens; ++i) {
+      token = tokens[i];
+      switch (token[0]) {
+        case "#":
+        case "^":
+          collector.push(token);
+          sections.push(token);
+          collector = token[4] = [];
+          break;
+        case "/":
+          section = sections.pop();
+          section[5] = token[2];
+          collector = sections.length > 0 ? sections[sections.length - 1][4] : nestedTokens;
+          break;
+        default:
+          collector.push(token);
+      }
+    }
+    return nestedTokens;
+  }
+  function Scanner(string) {
+    this.string = string;
+    this.tail = string;
+    this.pos = 0;
+  }
+  Scanner.prototype.eos = function eos() {
+    return this.tail === "";
+  };
+  Scanner.prototype.scan = function scan(re) {
+    var match = this.tail.match(re);
+    if (!match || match.index !== 0)
+      return "";
+    var string = match[0];
+    this.tail = this.tail.substring(string.length);
+    this.pos += string.length;
+    return string;
+  };
+  Scanner.prototype.scanUntil = function scanUntil(re) {
+    var index = this.tail.search(re), match;
+    switch (index) {
+      case -1:
+        match = this.tail;
+        this.tail = "";
+        break;
+      case 0:
+        match = "";
+        break;
+      default:
+        match = this.tail.substring(0, index);
+        this.tail = this.tail.substring(index);
+    }
+    this.pos += match.length;
+    return match;
+  };
+  function Context(view, parentContext) {
+    this.view = view;
+    this.cache = { ".": this.view };
+    this.parent = parentContext;
+  }
+  Context.prototype.push = function push(view) {
+    return new Context(view, this);
+  };
+  Context.prototype.lookup = function lookup(name2) {
+    var cache = this.cache;
+    var value;
+    if (cache.hasOwnProperty(name2)) {
+      value = cache[name2];
+    } else {
+      var context = this, intermediateValue, names, index, lookupHit = false;
+      while (context) {
+        if (name2.indexOf(".") > 0) {
+          intermediateValue = context.view;
+          names = name2.split(".");
+          index = 0;
+          while (intermediateValue != null && index < names.length) {
+            if (index === names.length - 1)
+              lookupHit = hasProperty(intermediateValue, names[index]) || primitiveHasOwnProperty(intermediateValue, names[index]);
+            intermediateValue = intermediateValue[names[index++]];
+          }
+        } else {
+          intermediateValue = context.view[name2];
+          lookupHit = hasProperty(context.view, name2);
+        }
+        if (lookupHit) {
+          value = intermediateValue;
+          break;
+        }
+        context = context.parent;
+      }
+      cache[name2] = value;
+    }
+    if (isFunction$1(value))
+      value = value.call(this.view);
+    return value;
+  };
+  function Writer() {
+    this.templateCache = {
+      _cache: {},
+      set: function set(key, value) {
+        this._cache[key] = value;
+      },
+      get: function get(key) {
+        return this._cache[key];
+      },
+      clear: function clear() {
+        this._cache = {};
+      }
+    };
+  }
+  Writer.prototype.clearCache = function clearCache() {
+    if (typeof this.templateCache !== "undefined") {
+      this.templateCache.clear();
+    }
+  };
+  Writer.prototype.parse = function parse(template, tags) {
+    var cache = this.templateCache;
+    var cacheKey = template + ":" + (tags || mustache.tags).join(":");
+    var isCacheEnabled = typeof cache !== "undefined";
+    var tokens = isCacheEnabled ? cache.get(cacheKey) : void 0;
+    if (tokens == void 0) {
+      tokens = parseTemplate(template, tags);
+      isCacheEnabled && cache.set(cacheKey, tokens);
+    }
+    return tokens;
+  };
+  Writer.prototype.render = function render(template, view, partials, config) {
+    var tags = this.getConfigTags(config);
+    var tokens = this.parse(template, tags);
+    var context = view instanceof Context ? view : new Context(view, void 0);
+    return this.renderTokens(tokens, context, partials, template, config);
+  };
+  Writer.prototype.renderTokens = function renderTokens(tokens, context, partials, originalTemplate, config) {
+    var buffer = "";
+    var token, symbol, value;
+    for (var i = 0, numTokens = tokens.length; i < numTokens; ++i) {
+      value = void 0;
+      token = tokens[i];
+      symbol = token[0];
+      if (symbol === "#") value = this.renderSection(token, context, partials, originalTemplate, config);
+      else if (symbol === "^") value = this.renderInverted(token, context, partials, originalTemplate, config);
+      else if (symbol === ">") value = this.renderPartial(token, context, partials, config);
+      else if (symbol === "&") value = this.unescapedValue(token, context);
+      else if (symbol === "name") value = this.escapedValue(token, context, config);
+      else if (symbol === "text") value = this.rawValue(token);
+      if (value !== void 0)
+        buffer += value;
+    }
+    return buffer;
+  };
+  Writer.prototype.renderSection = function renderSection(token, context, partials, originalTemplate, config) {
+    var self2 = this;
+    var buffer = "";
+    var value = context.lookup(token[1]);
+    function subRender(template) {
+      return self2.render(template, context, partials, config);
+    }
+    if (!value) return;
+    if (isArray$1(value)) {
+      for (var j = 0, valueLength = value.length; j < valueLength; ++j) {
+        buffer += this.renderTokens(token[4], context.push(value[j]), partials, originalTemplate, config);
+      }
+    } else if (typeof value === "object" || typeof value === "string" || typeof value === "number") {
+      buffer += this.renderTokens(token[4], context.push(value), partials, originalTemplate, config);
+    } else if (isFunction$1(value)) {
+      if (typeof originalTemplate !== "string")
+        throw new Error("Cannot use higher-order sections without the original template");
+      value = value.call(context.view, originalTemplate.slice(token[3], token[5]), subRender);
+      if (value != null)
+        buffer += value;
+    } else {
+      buffer += this.renderTokens(token[4], context, partials, originalTemplate, config);
+    }
+    return buffer;
+  };
+  Writer.prototype.renderInverted = function renderInverted(token, context, partials, originalTemplate, config) {
+    var value = context.lookup(token[1]);
+    if (!value || isArray$1(value) && value.length === 0)
+      return this.renderTokens(token[4], context, partials, originalTemplate, config);
+  };
+  Writer.prototype.indentPartial = function indentPartial(partial, indentation, lineHasNonSpace) {
+    var filteredIndentation = indentation.replace(/[^ \t]/g, "");
+    var partialByNl = partial.split("\n");
+    for (var i = 0; i < partialByNl.length; i++) {
+      if (partialByNl[i].length && (i > 0 || !lineHasNonSpace)) {
+        partialByNl[i] = filteredIndentation + partialByNl[i];
+      }
+    }
+    return partialByNl.join("\n");
+  };
+  Writer.prototype.renderPartial = function renderPartial(token, context, partials, config) {
+    if (!partials) return;
+    var tags = this.getConfigTags(config);
+    var value = isFunction$1(partials) ? partials(token[1]) : partials[token[1]];
+    if (value != null) {
+      var lineHasNonSpace = token[6];
+      var tagIndex = token[5];
+      var indentation = token[4];
+      var indentedValue = value;
+      if (tagIndex == 0 && indentation) {
+        indentedValue = this.indentPartial(value, indentation, lineHasNonSpace);
+      }
+      var tokens = this.parse(indentedValue, tags);
+      return this.renderTokens(tokens, context, partials, indentedValue, config);
+    }
+  };
+  Writer.prototype.unescapedValue = function unescapedValue(token, context) {
+    var value = context.lookup(token[1]);
+    if (value != null)
+      return value;
+  };
+  Writer.prototype.escapedValue = function escapedValue(token, context, config) {
+    var escape = this.getConfigEscape(config) || mustache.escape;
+    var value = context.lookup(token[1]);
+    if (value != null)
+      return typeof value === "number" && escape === mustache.escape ? String(value) : escape(value);
+  };
+  Writer.prototype.rawValue = function rawValue(token) {
+    return token[1];
+  };
+  Writer.prototype.getConfigTags = function getConfigTags(config) {
+    if (isArray$1(config)) {
+      return config;
+    } else if (config && typeof config === "object") {
+      return config.tags;
+    } else {
+      return void 0;
+    }
+  };
+  Writer.prototype.getConfigEscape = function getConfigEscape(config) {
+    if (config && typeof config === "object" && !isArray$1(config)) {
+      return config.escape;
+    } else {
+      return void 0;
+    }
+  };
+  var mustache = {
+    name: "mustache.js",
+    version: "4.2.0",
+    tags: ["{{", "}}"],
+    clearCache: void 0,
+    escape: void 0,
+    parse: void 0,
+    render: void 0,
+    Scanner: void 0,
+    Context: void 0,
+    Writer: void 0,
+    /**
+     * Allows a user to override the default caching strategy, by providing an
+     * object with set, get and clear methods. This can also be used to disable
+     * the cache by setting it to the literal `undefined`.
+     */
+    set templateCache(cache) {
+      defaultWriter.templateCache = cache;
+    },
+    /**
+     * Gets the default or overridden caching object from the default writer.
+     */
+    get templateCache() {
+      return defaultWriter.templateCache;
+    }
+  };
+  var defaultWriter = new Writer();
+  mustache.clearCache = function clearCache2() {
+    return defaultWriter.clearCache();
+  };
+  mustache.parse = function parse2(template, tags) {
+    return defaultWriter.parse(template, tags);
+  };
+  mustache.render = function render2(template, view, partials, config) {
+    if (typeof template !== "string") {
+      throw new TypeError('Invalid template! Template should be a "string" but "' + typeStr(template) + '" was given as the first argument for mustache#render(template, view, partials)');
+    }
+    return defaultWriter.render(template, view, partials, config);
+  };
+  mustache.escape = escapeHtml;
+  mustache.Scanner = Scanner;
+  mustache.Context = Context;
+  mustache.Writer = Writer;
   function bind(fn, thisArg) {
     return function wrap() {
       return fn.apply(thisArg, arguments);
@@ -828,18 +1285,18 @@
     }
     return null;
   }
-  function stringifySafely(rawValue, parser, encoder) {
-    if (utils$1.isString(rawValue)) {
+  function stringifySafely(rawValue2, parser, encoder) {
+    if (utils$1.isString(rawValue2)) {
       try {
-        (parser || JSON.parse)(rawValue);
-        return utils$1.trim(rawValue);
+        (parser || JSON.parse)(rawValue2);
+        return utils$1.trim(rawValue2);
       } catch (e) {
         if (e.name !== "SyntaxError") {
           throw e;
         }
       }
     }
-    return (0, JSON.stringify)(rawValue);
+    return (0, JSON.stringify)(rawValue2);
   }
   const defaults = {
     transitional: transitionalDefaults,
@@ -1250,7 +1707,7 @@
     let tail = 0;
     let firstSampleTS;
     min = min !== void 0 ? min : 1e3;
-    return function push(chunkLength) {
+    return function push2(chunkLength) {
       const now = Date.now();
       const startedAt = timestamps[tail];
       if (!firstSampleTS) {
@@ -2488,14 +2945,17 @@
     }
     return target;
   };
+  const ddddocrApiDefaultTemplate = JSON.stringify({ img: "{{{img}}}" }, null, 2);
+  const ddddocrApiDefaultUrl = "http://127.0.0.1:23456/ocr";
   const _sfc_main = {
     data() {
       return {
         packageJson,
         // 导入的常量
         DEFAULT_PROMPT,
+        ddddocrApiDefaultTemplate,
         // docker run --name ddddocr-server  -p 23456:80  -d jeanhua/ocr-server:latest
-        ddddocrApiDefaultUrl: "http://127.0.0.1:23456/ocr",
+        ddddocrApiDefaultUrl,
         // API 测试状态
         apiTestStatus: {
           openai: "",
@@ -2514,8 +2974,8 @@
         // 可能的值：'', 'loading', 'success', 'error'
         // 设置项
         settings: {
-          apiType: "openai",
-          // openai, gemini, qwen
+          apiType: "ddddocr",
+          // openai, gemini, qwen, ddddocr
           // OpenAI 设置
           openaiKey: "",
           openaiApiUrl: "",
@@ -2536,10 +2996,10 @@
           // 自定义提示词，默认填充
           // ddddocr设置
           ddddocrKey: "",
-          ddddocrApiUrl: "",
+          ddddocrApiUrl: ddddocrApiDefaultUrl,
           ddddocrModel: "",
-          ddddocrPrompt: DEFAULT_PROMPT,
-          // 自定义提示词，默认填充
+          ddddocrApiTemplate: ddddocrApiDefaultTemplate,
+          // ddddocrPrompt: DEFAULT_PROMPT, // 自定义提示词，默认填充
           // 自动识别设置
           autoRecognize: true,
           // 是否启用自动识别
@@ -3027,13 +3487,14 @@
        */
       async recognizeWithDdddocr(base64Image) {
         const apiUrl = this.settings.ddddocrApiUrl || this.ddddocrApiDefaultUrl;
-        const datas = {
+        const base = {
           "img": String(base64Image)
         };
+        const json = mustache.render(this.settings.ddddocrApiTemplate, base);
         const response = await this.request({
           method: "POST",
           url: apiUrl,
-          data: JSON.stringify(datas),
+          data: json,
           headers: {
             "Content-Type": "application/json"
           }
@@ -3536,6 +3997,7 @@
             setTimeout(initPlugin, 1e3);
           });
         }
+        this.openSettings();
       },
       /**
        * 通用请求函数，自动根据环境使用 GM_xmlhttpRequest 或 axios
@@ -4147,6 +4609,14 @@
             message: "优化Canvas图像失败: " + (error.message || "未知错误")
           };
         }
+      },
+      autoResize() {
+        const ta = this.$refs.jsontextareaRef;
+        if (ta) {
+          ta.value = JSON.stringify(JSON.parse(ta.value), null, 2);
+          ta.style.height = "auto";
+          ta.style.height = ta.scrollHeight + "px";
+        }
       }
     },
     mounted() {
@@ -4163,6 +4633,9 @@
       } catch (error) {
         console.error("验证码识别插件挂载失败:", error);
       }
+      this.$nextTick(() => {
+        this.autoResize();
+      });
     },
     created() {
       try {
@@ -4206,6 +4679,11 @@
         }
       } catch (error) {
         console.error("验证码识别插件创建阶段出错:", error);
+      }
+    },
+    watch: {
+      "settings.ddddocrApiTemplate"(newVal, oldVal) {
+        this.autoResize();
       }
     }
   };
@@ -4313,54 +4791,59 @@
   const _hoisted_79 = { key: 3 };
   const _hoisted_80 = { class: "captcha-settings-item" };
   const _hoisted_81 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
-  const _hoisted_82 = ["placeholder"];
-  const _hoisted_83 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
-  const _hoisted_84 = {
+  const _hoisted_82 = { class: "textarea-with-button" };
+  const _hoisted_83 = ["placeholder"];
+  const _hoisted_84 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
+  const _hoisted_85 = { class: "captcha-settings-item" };
+  const _hoisted_86 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 Request 请求模板:", -1);
+  const _hoisted_87 = { class: "textarea-with-button" };
+  const _hoisted_88 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认模板", -1);
+  const _hoisted_89 = {
     key: 1,
     class: "settings-content-tab"
   };
-  const _hoisted_85 = { class: "settings-card" };
-  const _hoisted_86 = /* @__PURE__ */ vue.createElementVNode("div", { class: "settings-card-title" }, [
+  const _hoisted_90 = { class: "settings-card" };
+  const _hoisted_91 = /* @__PURE__ */ vue.createElementVNode("div", { class: "settings-card-title" }, [
     /* @__PURE__ */ vue.createElementVNode("span", null, "功能设置")
   ], -1);
-  const _hoisted_87 = { class: "captcha-settings-item" };
-  const _hoisted_88 = { style: { "display": "flex", "align-items": "center" } };
-  const _hoisted_89 = /* @__PURE__ */ vue.createElementVNode("label", {
+  const _hoisted_92 = { class: "captcha-settings-item" };
+  const _hoisted_93 = { style: { "display": "flex", "align-items": "center" } };
+  const _hoisted_94 = /* @__PURE__ */ vue.createElementVNode("label", {
     for: "autoRecognize",
     style: { "margin-bottom": "0" }
   }, "验证码图片变化时自动识别", -1);
-  const _hoisted_90 = { class: "captcha-settings-item" };
-  const _hoisted_91 = { style: { "display": "flex", "align-items": "center" } };
-  const _hoisted_92 = /* @__PURE__ */ vue.createElementVNode("label", {
+  const _hoisted_95 = { class: "captcha-settings-item" };
+  const _hoisted_96 = { style: { "display": "flex", "align-items": "center" } };
+  const _hoisted_97 = /* @__PURE__ */ vue.createElementVNode("label", {
     for: "copyToClipboard",
     style: { "margin-bottom": "0" }
   }, "自动复制到剪贴板", -1);
-  const _hoisted_93 = { class: "captcha-settings-item" };
-  const _hoisted_94 = { style: { "display": "flex", "align-items": "center" } };
-  const _hoisted_95 = /* @__PURE__ */ vue.createElementVNode("label", {
+  const _hoisted_98 = { class: "captcha-settings-item" };
+  const _hoisted_99 = { style: { "display": "flex", "align-items": "center" } };
+  const _hoisted_100 = /* @__PURE__ */ vue.createElementVNode("label", {
     for: "showNotification",
     style: { "margin-bottom": "0" }
   }, "显示右上角通知提示", -1);
-  const _hoisted_96 = {
-    key: 2,
-    class: "settings-content-tab"
-  };
-  const _hoisted_97 = { class: "settings-card" };
-  const _hoisted_98 = /* @__PURE__ */ vue.createElementVNode("div", { class: "settings-card-title" }, [
-    /* @__PURE__ */ vue.createElementVNode("span", null, "禁用域名列表")
-  ], -1);
-  const _hoisted_99 = { class: "captcha-settings-item" };
-  const _hoisted_100 = /* @__PURE__ */ vue.createElementVNode("small", null, [
-    /* @__PURE__ */ vue.createTextVNode(" 在这些域名下将不启用验证码识别功能 "),
-    /* @__PURE__ */ vue.createElementVNode("br"),
-    /* @__PURE__ */ vue.createTextVNode(" 多个配置请使用换行显示 ")
-  ], -1);
   const _hoisted_101 = {
-    key: 3,
+    key: 2,
     class: "settings-content-tab"
   };
   const _hoisted_102 = { class: "settings-card" };
   const _hoisted_103 = /* @__PURE__ */ vue.createElementVNode("div", { class: "settings-card-title" }, [
+    /* @__PURE__ */ vue.createElementVNode("span", null, "禁用域名列表")
+  ], -1);
+  const _hoisted_104 = { class: "captcha-settings-item" };
+  const _hoisted_105 = /* @__PURE__ */ vue.createElementVNode("small", null, [
+    /* @__PURE__ */ vue.createTextVNode(" 在这些域名下将不启用验证码识别功能 "),
+    /* @__PURE__ */ vue.createElementVNode("br"),
+    /* @__PURE__ */ vue.createTextVNode(" 多个配置请使用换行显示 ")
+  ], -1);
+  const _hoisted_106 = {
+    key: 3,
+    class: "settings-content-tab"
+  };
+  const _hoisted_107 = { class: "settings-card" };
+  const _hoisted_108 = /* @__PURE__ */ vue.createElementVNode("div", { class: "settings-card-title" }, [
     /* @__PURE__ */ vue.createElementVNode("span", null, [
       /* @__PURE__ */ vue.createTextVNode("高级设置 "),
       /* @__PURE__ */ vue.createElementVNode("a", {
@@ -4370,28 +4853,28 @@
       }, "教程")
     ])
   ], -1);
-  const _hoisted_104 = /* @__PURE__ */ vue.createElementVNode("div", { class: "advanced-settings-warning" }, " ⚠️ 警告：如果您不了解CSS选择器，请不要修改这些设置，可能导致识别功能失效 ", -1);
-  const _hoisted_105 = { class: "captcha-settings-item" };
-  const _hoisted_106 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义验证码图片选择器：", -1);
-  const _hoisted_107 = { class: "custom-selectors" };
-  const _hoisted_108 = ["onUpdate:modelValue"];
-  const _hoisted_109 = ["onClick"];
+  const _hoisted_109 = /* @__PURE__ */ vue.createElementVNode("div", { class: "advanced-settings-warning" }, " ⚠️ 警告：如果您不了解CSS选择器，请不要修改这些设置，可能导致识别功能失效 ", -1);
   const _hoisted_110 = { class: "captcha-settings-item" };
-  const _hoisted_111 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义输入框选择器：", -1);
+  const _hoisted_111 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义验证码图片选择器：", -1);
   const _hoisted_112 = { class: "custom-selectors" };
   const _hoisted_113 = ["onUpdate:modelValue"];
   const _hoisted_114 = ["onClick"];
   const _hoisted_115 = { class: "captcha-settings-item" };
-  const _hoisted_116 = /* @__PURE__ */ vue.createElementVNode("label", null, "验证码规则管理：", -1);
-  const _hoisted_117 = { class: "rules-management" };
-  const _hoisted_118 = { class: "rules-url-input" };
-  const _hoisted_119 = /* @__PURE__ */ vue.createElementVNode("small", null, "规则文件URL，留空则使用默认URL：https://ghfast.top/https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json", -1);
-  const _hoisted_120 = { key: 0 };
-  const _hoisted_121 = { key: 1 };
-  const _hoisted_122 = { key: 2 };
-  const _hoisted_123 = { key: 3 };
-  const _hoisted_124 = /* @__PURE__ */ vue.createElementVNode("small", null, "从远程加载最新的验证码识别规则", -1);
-  const _hoisted_125 = { class: "captcha-settings-buttons" };
+  const _hoisted_116 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义输入框选择器：", -1);
+  const _hoisted_117 = { class: "custom-selectors" };
+  const _hoisted_118 = ["onUpdate:modelValue"];
+  const _hoisted_119 = ["onClick"];
+  const _hoisted_120 = { class: "captcha-settings-item" };
+  const _hoisted_121 = /* @__PURE__ */ vue.createElementVNode("label", null, "验证码规则管理：", -1);
+  const _hoisted_122 = { class: "rules-management" };
+  const _hoisted_123 = { class: "rules-url-input" };
+  const _hoisted_124 = /* @__PURE__ */ vue.createElementVNode("small", null, "规则文件URL，留空则使用默认URL：https://ghfast.top/https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json", -1);
+  const _hoisted_125 = { key: 0 };
+  const _hoisted_126 = { key: 1 };
+  const _hoisted_127 = { key: 2 };
+  const _hoisted_128 = { key: 3 };
+  const _hoisted_129 = /* @__PURE__ */ vue.createElementVNode("small", null, "从远程加载最新的验证码识别规则", -1);
+  const _hoisted_130 = { class: "captcha-settings-buttons" };
   function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     return vue.openBlock(), vue.createElementBlock("div", _hoisted_1, [
       $data.process.env.NODE_ENV === "development" && !$data.showSettings ? (vue.openBlock(), vue.createElementBlock("div", {
@@ -4646,88 +5129,113 @@
                     }, [
                       $data.apiTestStatus.ddddocr === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_76, "测试连接")) : $data.apiTestStatus.ddddocr === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_77)) : $data.apiTestStatus.ddddocr === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_78, "成功")) : $data.apiTestStatus.ddddocr === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_79, "失败")) : vue.createCommentVNode("", true)
                     ], 2)
-                  ])
-                ])) : vue.createCommentVNode("", true),
-                vue.createElementVNode("div", _hoisted_80, [
-                  _hoisted_81,
-                  vue.withDirectives(vue.createElementVNode("input", {
-                    "onUpdate:modelValue": _cache[25] || (_cache[25] = ($event) => $data.settings.ddddocrApiUrl = $event),
-                    placeholder: $data.ddddocrApiDefaultUrl,
-                    type: "text"
-                  }, null, 8, _hoisted_82), [
-                    [vue.vModelText, $data.settings.ddddocrApiUrl]
                   ]),
-                  _hoisted_83
-                ])
+                  vue.createElementVNode("div", _hoisted_80, [
+                    _hoisted_81,
+                    vue.createElementVNode("div", _hoisted_82, [
+                      vue.withDirectives(vue.createElementVNode("input", {
+                        "onUpdate:modelValue": _cache[25] || (_cache[25] = ($event) => $data.settings.ddddocrApiUrl = $event),
+                        placeholder: $data.ddddocrApiDefaultUrl,
+                        type: "text"
+                      }, null, 8, _hoisted_83), [
+                        [vue.vModelText, $data.settings.ddddocrApiUrl]
+                      ]),
+                      vue.createElementVNode("button", {
+                        class: "use-default-prompt",
+                        type: "button",
+                        onClick: _cache[26] || (_cache[26] = ($event) => $data.settings.ddddocrApiUrl = $data.ddddocrApiDefaultUrl)
+                      }, " 默认 ")
+                    ]),
+                    _hoisted_84
+                  ]),
+                  vue.createElementVNode("div", _hoisted_85, [
+                    _hoisted_86,
+                    vue.createElementVNode("div", _hoisted_87, [
+                      vue.withDirectives(vue.createElementVNode("textarea", {
+                        ref: "jsontextareaRef",
+                        "onUpdate:modelValue": _cache[27] || (_cache[27] = ($event) => $data.settings.ddddocrApiTemplate = $event),
+                        onInput: _cache[28] || (_cache[28] = (...args) => $options.autoResize && $options.autoResize(...args))
+                      }, null, 544), [
+                        [vue.vModelText, $data.settings.ddddocrApiTemplate]
+                      ]),
+                      vue.createElementVNode("button", {
+                        class: "use-default-prompt",
+                        type: "button",
+                        onClick: _cache[29] || (_cache[29] = ($event) => $data.settings.ddddocrApiTemplate = $data.ddddocrApiDefaultTemplate)
+                      }, " 使用默认 ")
+                    ]),
+                    _hoisted_88
+                  ])
+                ])) : vue.createCommentVNode("", true)
               ])
             ])) : vue.createCommentVNode("", true),
-            $data.activeSettingTab === "function" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_84, [
-              vue.createElementVNode("div", _hoisted_85, [
-                _hoisted_86,
-                vue.createElementVNode("div", _hoisted_87, [
-                  vue.createElementVNode("div", _hoisted_88, [
+            $data.activeSettingTab === "function" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_89, [
+              vue.createElementVNode("div", _hoisted_90, [
+                _hoisted_91,
+                vue.createElementVNode("div", _hoisted_92, [
+                  vue.createElementVNode("div", _hoisted_93, [
                     vue.withDirectives(vue.createElementVNode("input", {
                       type: "checkbox",
-                      "onUpdate:modelValue": _cache[26] || (_cache[26] = ($event) => $data.settings.autoRecognize = $event),
+                      "onUpdate:modelValue": _cache[30] || (_cache[30] = ($event) => $data.settings.autoRecognize = $event),
                       id: "autoRecognize",
                       style: { "width": "auto", "margin-right": "8px !important" }
                     }, null, 512), [
                       [vue.vModelCheckbox, $data.settings.autoRecognize]
                     ]),
-                    _hoisted_89
+                    _hoisted_94
                   ])
                 ]),
-                vue.createElementVNode("div", _hoisted_90, [
-                  vue.createElementVNode("div", _hoisted_91, [
+                vue.createElementVNode("div", _hoisted_95, [
+                  vue.createElementVNode("div", _hoisted_96, [
                     vue.withDirectives(vue.createElementVNode("input", {
                       type: "checkbox",
-                      "onUpdate:modelValue": _cache[27] || (_cache[27] = ($event) => $data.settings.copyToClipboard = $event),
+                      "onUpdate:modelValue": _cache[31] || (_cache[31] = ($event) => $data.settings.copyToClipboard = $event),
                       id: "copyToClipboard",
                       style: { "width": "auto", "margin-right": "8px !important" }
                     }, null, 512), [
                       [vue.vModelCheckbox, $data.settings.copyToClipboard]
                     ]),
-                    _hoisted_92
+                    _hoisted_97
                   ])
                 ]),
-                vue.createElementVNode("div", _hoisted_93, [
-                  vue.createElementVNode("div", _hoisted_94, [
+                vue.createElementVNode("div", _hoisted_98, [
+                  vue.createElementVNode("div", _hoisted_99, [
                     vue.withDirectives(vue.createElementVNode("input", {
                       type: "checkbox",
-                      "onUpdate:modelValue": _cache[28] || (_cache[28] = ($event) => $data.settings.showNotification = $event),
+                      "onUpdate:modelValue": _cache[32] || (_cache[32] = ($event) => $data.settings.showNotification = $event),
                       id: "showNotification",
                       style: { "width": "auto", "margin-right": "8px !important" }
                     }, null, 512), [
                       [vue.vModelCheckbox, $data.settings.showNotification]
                     ]),
-                    _hoisted_95
+                    _hoisted_100
                   ])
                 ])
               ])
             ])) : vue.createCommentVNode("", true),
-            $data.activeSettingTab === "domain" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_96, [
-              vue.createElementVNode("div", _hoisted_97, [
-                _hoisted_98,
-                vue.createElementVNode("div", _hoisted_99, [
+            $data.activeSettingTab === "domain" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_101, [
+              vue.createElementVNode("div", _hoisted_102, [
+                _hoisted_103,
+                vue.createElementVNode("div", _hoisted_104, [
                   vue.withDirectives(vue.createElementVNode("textarea", {
-                    "onUpdate:modelValue": _cache[29] || (_cache[29] = ($event) => $data.settings.disabledDomains = $event),
+                    "onUpdate:modelValue": _cache[33] || (_cache[33] = ($event) => $data.settings.disabledDomains = $event),
                     placeholder: "每行一个域名，支持正则和通配符，例如：\nexample.com\n*.example.org\nexample.*.com\n/^(www\\.)?example\\.com$/",
                     rows: "6",
                     class: "domain-textarea"
                   }, null, 512), [
                     [vue.vModelText, $data.settings.disabledDomains]
                   ]),
-                  _hoisted_100
+                  _hoisted_105
                 ])
               ])
             ])) : vue.createCommentVNode("", true),
-            $data.activeSettingTab === "advanced" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_101, [
-              vue.createElementVNode("div", _hoisted_102, [
-                _hoisted_103,
-                _hoisted_104,
-                vue.createElementVNode("div", _hoisted_105, [
-                  _hoisted_106,
-                  vue.createElementVNode("div", _hoisted_107, [
+            $data.activeSettingTab === "advanced" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_106, [
+              vue.createElementVNode("div", _hoisted_107, [
+                _hoisted_108,
+                _hoisted_109,
+                vue.createElementVNode("div", _hoisted_110, [
+                  _hoisted_111,
+                  vue.createElementVNode("div", _hoisted_112, [
                     (vue.openBlock(true), vue.createElementBlock(vue.Fragment, null, vue.renderList($data.settings.customCaptchaSelectors, (selector, index) => {
                       return vue.openBlock(), vue.createElementBlock("div", {
                         key: "captcha-" + index,
@@ -4737,26 +5245,26 @@
                           type: "text",
                           "onUpdate:modelValue": ($event) => $data.settings.customCaptchaSelectors[index] = $event,
                           placeholder: "例如: img[src*='captcha']"
-                        }, null, 8, _hoisted_108), [
+                        }, null, 8, _hoisted_113), [
                           [vue.vModelText, $data.settings.customCaptchaSelectors[index]]
                         ]),
                         vue.createElementVNode("button", {
                           type: "button",
                           class: "remove-selector",
                           onClick: ($event) => $options.removeSelector("captcha", index)
-                        }, " × ", 8, _hoisted_109)
+                        }, " × ", 8, _hoisted_114)
                       ]);
                     }), 128)),
                     vue.createElementVNode("button", {
                       type: "button",
                       class: "add-selector",
-                      onClick: _cache[30] || (_cache[30] = ($event) => $options.addSelector("captcha"))
+                      onClick: _cache[34] || (_cache[34] = ($event) => $options.addSelector("captcha"))
                     }, " 添加选择器 ")
                   ])
                 ]),
-                vue.createElementVNode("div", _hoisted_110, [
-                  _hoisted_111,
-                  vue.createElementVNode("div", _hoisted_112, [
+                vue.createElementVNode("div", _hoisted_115, [
+                  _hoisted_116,
+                  vue.createElementVNode("div", _hoisted_117, [
                     (vue.openBlock(true), vue.createElementBlock(vue.Fragment, null, vue.renderList($data.settings.customInputSelectors, (selector, index) => {
                       return vue.openBlock(), vue.createElementBlock("div", {
                         key: "input-" + index,
@@ -4766,35 +5274,35 @@
                           type: "text",
                           "onUpdate:modelValue": ($event) => $data.settings.customInputSelectors[index] = $event,
                           placeholder: "例如: input[name*='captcha']"
-                        }, null, 8, _hoisted_113), [
+                        }, null, 8, _hoisted_118), [
                           [vue.vModelText, $data.settings.customInputSelectors[index]]
                         ]),
                         vue.createElementVNode("button", {
                           type: "button",
                           class: "remove-selector",
                           onClick: ($event) => $options.removeSelector("input", index)
-                        }, " × ", 8, _hoisted_114)
+                        }, " × ", 8, _hoisted_119)
                       ]);
                     }), 128)),
                     vue.createElementVNode("button", {
                       type: "button",
                       class: "add-selector",
-                      onClick: _cache[31] || (_cache[31] = ($event) => $options.addSelector("input"))
+                      onClick: _cache[35] || (_cache[35] = ($event) => $options.addSelector("input"))
                     }, " 添加选择器 ")
                   ])
                 ]),
-                vue.createElementVNode("div", _hoisted_115, [
-                  _hoisted_116,
-                  vue.createElementVNode("div", _hoisted_117, [
-                    vue.createElementVNode("div", _hoisted_118, [
+                vue.createElementVNode("div", _hoisted_120, [
+                  _hoisted_121,
+                  vue.createElementVNode("div", _hoisted_122, [
+                    vue.createElementVNode("div", _hoisted_123, [
                       vue.withDirectives(vue.createElementVNode("input", {
                         type: "text",
-                        "onUpdate:modelValue": _cache[32] || (_cache[32] = ($event) => $data.settings.rulesUrl = $event),
+                        "onUpdate:modelValue": _cache[36] || (_cache[36] = ($event) => $data.settings.rulesUrl = $event),
                         placeholder: "https://ghfast.top/https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json"
                       }, null, 512), [
                         [vue.vModelText, $data.settings.rulesUrl]
                       ]),
-                      _hoisted_119
+                      _hoisted_124
                     ]),
                     vue.createElementVNode("button", {
                       type: "button",
@@ -4803,22 +5311,22 @@
                         "test-success": $data.rulesLoadStatus === "success",
                         "test-error": $data.rulesLoadStatus === "error"
                       }]),
-                      onClick: _cache[33] || (_cache[33] = (...args) => $options.reloadRules && $options.reloadRules(...args))
+                      onClick: _cache[37] || (_cache[37] = (...args) => $options.reloadRules && $options.reloadRules(...args))
                     }, [
-                      $data.rulesLoadStatus === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_120, "重新加载规则")) : $data.rulesLoadStatus === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_121)) : $data.rulesLoadStatus === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_122, "加载成功")) : $data.rulesLoadStatus === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_123, "加载失败")) : vue.createCommentVNode("", true)
+                      $data.rulesLoadStatus === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_125, "重新加载规则")) : $data.rulesLoadStatus === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_126)) : $data.rulesLoadStatus === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_127, "加载成功")) : $data.rulesLoadStatus === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_128, "加载失败")) : vue.createCommentVNode("", true)
                     ], 2),
-                    _hoisted_124
+                    _hoisted_129
                   ])
                 ])
               ])
             ])) : vue.createCommentVNode("", true)
           ]),
-          vue.createElementVNode("div", _hoisted_125, [
+          vue.createElementVNode("div", _hoisted_130, [
             vue.createElementVNode("button", {
-              onClick: _cache[34] || (_cache[34] = (...args) => $options.saveSettings && $options.saveSettings(...args))
+              onClick: _cache[38] || (_cache[38] = (...args) => $options.saveSettings && $options.saveSettings(...args))
             }, "保存设置"),
             vue.createElementVNode("button", {
-              onClick: _cache[35] || (_cache[35] = (...args) => $options.closeSettings && $options.closeSettings(...args))
+              onClick: _cache[39] || (_cache[39] = (...args) => $options.closeSettings && $options.closeSettings(...args))
             }, "取消")
           ])
         ])
