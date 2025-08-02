@@ -287,7 +287,7 @@
                 <label>自定义 API 地址 (可选):</label>
                 <input
                     v-model="settings.ddddocrApiUrl"
-                    placeholder="http://127.0.0.1:23456/"
+                    :placeholder="ddddocrApiDefaultUrl"
                     type="text"
                 />
                 <small>留空使用默认地址</small>
@@ -502,7 +502,7 @@ example.*.com
 <script>
 import packageJson from "../package.json";
 import axios from "axios";
-import { DEFAULT_PROMPT } from "./assets/prompts.js";
+import {DEFAULT_PROMPT} from "./assets/prompts.js";
 
 export default {
   data() {
@@ -510,6 +510,8 @@ export default {
       packageJson: packageJson,
       // 导入的常量
       DEFAULT_PROMPT,
+      // docker run --name ddddocr-server  -p 23456:80  -d jeanhua/ocr-server:latest
+      ddddocrApiDefaultUrl: "http://127.0.0.1:23456/ocr",
       // API 测试状态
       apiTestStatus: {
         openai: "", // 可能的值：'', 'loading', 'success', 'error'
@@ -1148,14 +1150,14 @@ export default {
      */
     async recognizeWithDdddocr(base64Image) {
       const apiUrl =
-          this.settings.qwenApiUrl ||
-          "http://127.0.0.1:23456/";
+          this.settings.ddddocrApiUrl ||
+          this.ddddocrApiDefaultUrl;
       const datas = {
-        "ImageBase64": String(base64Image),
+        "img": String(base64Image),
       }
       const response = await this.request({
         method: "POST",
-        url: apiUrl + "identify_GeneralCAPTCHA",
+        url: apiUrl,
         data: JSON.stringify(datas),
         headers: {
           "Content-Type": "application/json",
