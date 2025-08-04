@@ -14,4 +14,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 WORKDIR /app/app
 
 # 运行应用
-CMD ["gunicorn", "-w", "5", "-b", "0.0.0.0:8000", "--worker-class", "gevent", "--keep-alive", "10", "SimpleCaptcha:app"]
+CMD ["gunicorn", "-w", "5", "-b", "0.0.0.0:8000", "--worker-class", "gevent","--worker-connections", "100",
+"--preload","--max-requests","1000","--max-requests-jitter","200",
+"--keep-alive", "10", "SimpleCaptcha:app"]
