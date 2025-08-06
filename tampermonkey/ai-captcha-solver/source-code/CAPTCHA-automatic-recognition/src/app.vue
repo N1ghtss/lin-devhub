@@ -529,7 +529,7 @@ import axios from "axios";
 import {DEFAULT_PROMPT} from "./assets/prompts.js";
 
 const ddddocrApiDefaultTemplate = JSON.stringify({ImageBase64: "{{{img}}}"}, null, 2);
-const ddddocrApiDefaultUrl = "http://127.0.0.1:23456/identify_GeneralCAPTCHA";
+const ddddocrApiDefaultUrl = "https://pqctajdkprfg.ap-southeast-1.clawcloudrun.com/identify_GeneralCAPTCHA";
 export default {
   data() {
     return {
