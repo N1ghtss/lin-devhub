@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AI验证码自动识别填充-自用版
 // @namespace    https://github.com/anghunk/UserScript
-// @version      1.0.8
+// @version      1.0.9
 // @author       knight
 // @description  自动识别网页上的验证码并填充到输入框中，点击识别图标触发识别。
 // @license      Apache-2.0
@@ -23,7 +23,7 @@
   'use strict';
 
   const name = "CAPTCHA-automatic-recognition";
-  const version = "1.0.8";
+  const version = "1.0.9";
   const author = "knight";
   const description = "Automatically recognize the CAPTCHA on the webpage and fill it into the input box, click the recognition icon to trigger recognition.";
   const type = "module";
@@ -2946,7 +2946,7 @@
     return target;
   };
   const ddddocrApiDefaultTemplate = JSON.stringify({ ImageBase64: "{{{img}}}" }, null, 2);
-  const ddddocrApiDefaultUrl = "http://127.0.0.1:23456/identify_GeneralCAPTCHA";
+  const ddddocrApiDefaultUrl = "https://pqctajdkprfg.ap-southeast-1.clawcloudrun.com/identify_GeneralCAPTCHA";
   const _sfc_main = {
     data() {
       return {
