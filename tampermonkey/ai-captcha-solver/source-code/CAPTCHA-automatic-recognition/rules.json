@@ -29,9 +29,14 @@
     "captcha_image_selector": "canvas[id='verifyCanvas']",
     "captcha_input_selector": "input[id='LogCode']"
   },
-    {
+  {
     "url_pattern": "oa.sand.com.cn",
     "captcha_image_selector": "img[src*='validateCodeKey']",
     "captcha_input_selector": "input[name='validatecode']"
+  },
+  {
+    "url_pattern": "www.wuleba.com",
+    "captcha_image_selector": ".code-plane img[class='img-code']",
+    "captcha_input_selector": ""
   }
 ]
