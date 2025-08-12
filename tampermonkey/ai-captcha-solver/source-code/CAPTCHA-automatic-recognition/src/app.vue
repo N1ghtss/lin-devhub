@@ -15,7 +15,8 @@
     </div>
 
     <!-- 设置弹窗 -->
-    <div v-if="showSettings" class="captcha-settings-modal">
+    <div v-if="showSettings" class="captcha-settings-overlay" @click="closeSettings"></div>
+    <div v-if="showSettings" class="captcha-settings-modal" :class="{ show: showSettings }" @click.stop>
       <div class="captcha-settings-content">
         <h3>
           验证码识别设置 <span>{{ packageJson.version }}</span>
@@ -28,7 +29,7 @@
             :class="{ active: activeSettingTab === 'ai' }"
             @click="activeSettingTab = 'ai'"
           >
-            AI服务商
+            AI 服务商
           </div>
           <div
             class="settings-nav-item"
@@ -55,11 +56,11 @@
 
         <!-- 设置内容区域 -->
         <div class="settings-content">
-          <!-- AI模型设置 -->
+          <!-- AI 模型设置 -->
           <div v-if="activeSettingTab === 'ai'" class="settings-content-tab">
             <div class="settings-card">
               <div class="settings-card-title">
-                <span>AI服务商设置</span>
+                <span>AI 服务商设置</span>
                 <span class="api-type">{{ getApiTypeName(settings.apiType) }}</span>
               </div>
 
@@ -310,6 +311,20 @@
                   >
                 </div>
               </div>
+
+              <div class="captcha-settings-item">
+                <div style="display: flex; align-items: center">
+                  <input
+                    type="checkbox"
+                    v-model="settings.autoFetchCloudRules"
+                    id="autoFetchCloudRules"
+                    style="width: auto; margin-right: 8px !important"
+                  />
+                  <label for="autoFetchCloudRules" style="margin-bottom: 0"
+                    >每日首次运行时自动获取云端规则</label
+                  >
+                </div>
+              </div>
             </div>
           </div>
 
@@ -356,7 +371,7 @@ example.*.com
               </div>
 
               <div class="advanced-settings-warning">
-                ⚠️ 警告：如果您不了解CSS选择器，请不要修改这些设置，可能导致识别功能失效
+                ⚠️ 警告：如果您不了解 CSS 选择器，请不要修改这些设置，可能导致识别功能失效
               </div>
 
               <div class="captcha-settings-item">
@@ -431,7 +446,7 @@ example.*.com
                       placeholder="https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json"
                     />
                     <small
-                      >规则文件URL，留空则使用默认URL：https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json</small
+                      >规则文件 URL，留空则使用默认 URL：https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json</small
                     >
                   </div>
                   <button
@@ -510,14 +525,16 @@ export default {
         copyToClipboard: true, // 是否自动复制到剪贴板
         // 通知设置
         showNotification: true, // 是否显示右上角通知，默认开启
+        // 云端规则设置
+        autoFetchCloudRules: false, // 是否每日首次运行时自动获取云端规则，默认关闭
         // 自定义选择器
         customCaptchaSelectors: [],
         customInputSelectors: [],
         // 禁用域名列表
         disabledDomains: "", // 不启用验证码功能的网站域名列表，支持正则和通配符
-        // 规则URL
+        // 规则 URL
         rulesUrl:
-          "https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json", // 规则文件URL
+          "https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json", // 规则文件 URL
       },
       // 是否显示设置面板
       showSettings: false,
@@ -559,8 +576,8 @@ export default {
   },
   methods: {
     /**
-     * 获取API类型名称
-     * @param {string} apiType - API类型
+     * 获取 API 类型名称
+     * @param {string} apiType - API 类型
      * @returns {string} - 名称
      */
     getApiTypeName(apiType) {
@@ -628,12 +645,12 @@ export default {
         this.rulesLoadStatus = "loading";
         let rulesData;
 
-        // 获取规则URL，如果为空则使用默认URL
+        // 获取规则 URL，如果为空则使用默认 URL
         const rulesUrl =
           this.settings.rulesUrl ||
           "https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json";
 
-        // 从rules.json文件加载规则
+        // 从 rules.json 文件加载规则
         const response = await this.request({
           method: "GET",
           url: rulesUrl,
@@ -720,7 +737,7 @@ export default {
     async recognizeCaptcha(base64Image) {
       // 检查是否配置了 API
       if (!this.isApiConfigured()) {
-        console.error("未配置验证码识别API");
+        console.error("未配置验证码识别 API");
         this.showToast("请先配置验证码识别 API", "error");
         this.openSettings();
         return "";
@@ -729,25 +746,25 @@ export default {
       // 根据 API 类型调用不同的识别方法
       let result = "";
       try {
-        // console.log("开始识别验证码，使用API类型:", this.settings.apiType);
+        // console.log("开始识别验证码，使用 API 类型:", this.settings.apiType);
         this.showToast("正在识别验证码...", "info");
 
         switch (this.settings.apiType) {
           case "openai":
-            // console.log("使用OpenAI API识别验证码");
+            // console.log("使用 OpenAI API 识别验证码");
             result = await this.recognizeWithOpenAI(base64Image);
             break;
           case "gemini":
-            // console.log("使用Google Gemini API识别验证码");
+            // console.log("使用 Google Gemini API 识别验证码");
             result = await this.recognizeWithGemini(base64Image);
             break;
           case "qwen":
-            // console.log("使用阿里云通义千问API识别验证码");
+            // console.log("使用阿里云通义千问 API 识别验证码");
             result = await this.recognizeWithQwen(base64Image);
             break;
           default:
-            // console.error("未知的API类型:", this.settings.apiType);
-            this.showToast(`未知的API类型: ${this.settings.apiType}`, "error");
+            // console.error("未知的 API 类型:", this.settings.apiType);
+            this.showToast(`未知的 API 类型：${this.settings.apiType}`, "error");
             return "";
         }
 
@@ -787,15 +804,15 @@ export default {
     },
 
     /**
-     * 将图片或canvas转换为 base64 格式
-     * @param {HTMLImageElement|HTMLCanvasElement} element - 图片或canvas元素
+     * 将图片或 canvas 转换为 base64 格式
+     * @param {HTMLImageElement|HTMLCanvasElement} element - 图片或 canvas 元素
      * @returns {Object} - 返回包含成功状态和数据的对象
      */
     imageToBase64(element) {
       try {
         // 检查元素类型
         if (element.tagName === 'CANVAS') {
-          // 直接从canvas获取base64数据
+          // 直接从 canvas 获取 base64 数据
           try {
             const base64Data = element.toDataURL("image/png").split(",")[1];
             
@@ -1047,7 +1064,7 @@ export default {
     },
 
     /**
-     * 使用通义千问 API 识别验证码（新版API格式，messages/content结构）
+     * 使用通义千问 API 识别验证码（新版 API 格式，messages/content 结构）
      */
     async recognizeWithQwen(base64Image) {
       const apiUrl =
@@ -1137,7 +1154,7 @@ export default {
       }
 
       this.captchaCheckInterval = setInterval(() => {
-        // 获取当前页面URL
+        // 获取当前页面 URL
         const currentUrl = window.location.href;
 
         // 检查当前域名是否在禁用列表中
@@ -1175,7 +1192,7 @@ export default {
               continue;
             }
 
-            // 检查URL是否匹配
+            // 检查 URL 是否匹配
             let isUrlMatch = false;
             if (!rule.url_pattern || rule.url_pattern === "*") {
               // 空或星号表示对所有网站生效
@@ -1193,7 +1210,7 @@ export default {
                 const regex = new RegExp(regexPattern);
                 isUrlMatch = regex.test(currentUrl);
               } catch (e) {
-                console.error("无效的正则表达式规则:", rule.url_pattern, e);
+                console.error("无效的正则表达式规则：", rule.url_pattern, e);
               }
             } else if (rule.url_pattern.includes("*")) {
               // 通配符匹配
@@ -1207,7 +1224,7 @@ export default {
               isUrlMatch = currentUrl.includes(rule.url_pattern);
             }
 
-            // 如果URL匹配，应用此规则的选择器
+            // 如果 URL 匹配，应用此规则的选择器
             if (isUrlMatch) {
               // 添加验证码图片选择器
               if (
@@ -1239,14 +1256,14 @@ export default {
               // 查找所有匹配的验证码图片
               const captchaImgs = document.querySelectorAll(selector);
 
-                        // 为每个验证码图片或canvas查找对应的输入框
+                        // 为每个验证码图片或 canvas 查找对应的输入框
           captchaImgs.forEach((captchaElement) => {
-            // 检查元素类型，支持img和canvas两种类型
+            // 检查元素类型，支持 img 和 canvas 两种类型
             if (captchaElement.tagName !== "IMG" && captchaElement.tagName !== "CANVAS") {
               return;
             }
 
-            // 对于img元素，确保有src属性
+            // 对于 img 元素，确保有 src 属性
             if (captchaElement.tagName === "IMG" && !captchaElement.src) {
               return;
             }
@@ -1308,7 +1325,7 @@ export default {
             }
           }
         } catch (error) {
-          console.error("检测验证码时出错:", error);
+          console.error("检测验证码时出错：", error);
         }
       }, 500); // 延迟 500ms，确保图片已经加载完成
     },
@@ -1379,7 +1396,7 @@ export default {
           // console.log("成功添加验证码识别图标");
         });
       } catch (error) {
-        console.error("添加验证码识别图标时出错:", error);
+        console.error("添加验证码识别图标时出错：", error);
       }
     },
 
@@ -1403,16 +1420,16 @@ export default {
         // 更新图标状态为加载中
         icon.classList.add("captcha-recognition-loading");
 
-        // 获取 base64 编码的图片或canvas
+        // 获取 base64 编码的图片或 canvas
         let base64Result;
         if (checkedBase64) {
           // 如果已经有检查过的结果，直接使用
           base64Result = checkedBase64;
-          // console.log("使用预先检查的base64结果");
+          // console.log("使用预先检查的 base64 结果");
         } else {
           // 根据元素类型进行不同的处理
           if (captchaImg.tagName === 'CANVAS') {
-            // 使用专门的canvas优化函数
+            // 使用专门的 canvas 优化函数
             base64Result = this.optimizeCanvasImage(captchaImg);
             // 如果优化失败，回退到普通的转换
             if (!base64Result.success) {
@@ -1420,13 +1437,13 @@ export default {
             }
           } else {
             // 否则转换图片为 base64
-            // console.log("开始转换图片为base64");
+            // console.log("开始转换图片为 base64");
             base64Result = this.imageToBase64(captchaImg);
           }
 
           // 如果转换失败，显示错误并终止识别
           if (!base64Result.success) {
-            console.error("验证码转换失败:", base64Result.message);
+            console.error("验证码转换失败：", base64Result.message);
             this.showToast(base64Result.message, "error");
             icon.classList.remove("captcha-recognition-loading");
             icon.classList.add("captcha-recognition-error");
@@ -1438,7 +1455,7 @@ export default {
         }
 
         // 识别验证码
-        // console.log("开始调用AI识别验证码");
+        // console.log("开始调用 AI 识别验证码");
         const text = await this.recognizeCaptcha(base64Result.data);
         // console.log("验证码识别结果:", text);
 
@@ -1468,9 +1485,9 @@ export default {
               try {
                 await navigator.clipboard.writeText(text);
                 // console.log("已将验证码复制到剪贴板");
-                this.showToast(`已将验证码复制到剪贴板: ${text}`, "success");
+                this.showToast(`已将验证码复制到剪贴板：${text}`, "success");
               } catch (clipboardError) {
-                console.error("使用Clipboard API失败，尝试传统方法", clipboardError);
+                console.error("使用 Clipboard API 失败，尝试传统方法", clipboardError);
                 // 如果剪贴板 API 不可用，使用传统方法
                 const textarea = document.createElement("textarea");
                 textarea.value = text;
@@ -1510,7 +1527,7 @@ export default {
             // console.log("已将验证码复制到剪贴板");
             this.showToast(`已将验证码复制到剪贴板`, "success");
           } catch (clipboardError) {
-            console.error("使用Clipboard API失败，尝试传统方法", clipboardError);
+            console.error("使用 Clipboard API 失败，尝试传统方法", clipboardError);
             // 如果剪贴板 API 不可用，使用传统方法
             const textarea = document.createElement("textarea");
             textarea.value = text;
@@ -1591,7 +1608,7 @@ export default {
             newCaptchaElements.push(mutation.target);
 
             // 记录日志，帮助调试
-            // console.log("检测到验证码图片src变化:", mutation.target.src);
+            // console.log("检测到验证码图片 src 变化:", mutation.target.src);
           }
         });
 
@@ -1806,9 +1823,9 @@ export default {
             }
           }
         } catch (error) {
-          console.error("初始化验证码识别功能失败:", error);
+          console.error("初始化验证码识别功能失败：", error);
           this.showToast(
-            `初始化验证码识别功能失败: ${error.message || "未知错误"}`,
+            `初始化验证码识别功能失败：${error.message || "未知错误"}`,
             "error"
           );
         }
@@ -1956,7 +1973,7 @@ export default {
         // 设置加载状态
         this.apiTestStatus[apiType] = "loading";
 
-        // 测试图片base64
+        // 测试图片 base64
         const testBase64Image =
           "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";
 
@@ -2190,7 +2207,7 @@ export default {
               return true;
             }
           } catch (e) {
-            console.error("无效的正则表达式:", domain, e);
+            console.error("无效的正则表达式：", domain, e);
           }
           continue;
         }
@@ -2204,7 +2221,7 @@ export default {
               return true;
             }
           } catch (e) {
-            console.error("无效的通配符模式:", domain, e);
+            console.error("无效的通配符模式：", domain, e);
           }
           continue;
         }
@@ -2219,8 +2236,8 @@ export default {
     },
 
     /**
-     * 为验证码元素(图片或canvas)添加识别图标
-     * @param {HTMLImageElement|HTMLCanvasElement} captchaElement - 验证码元素(图片或canvas)
+     * 为验证码元素 (图片或 canvas) 添加识别图标
+     * @param {HTMLImageElement|HTMLCanvasElement} captchaElement - 验证码元素 (图片或 canvas)
      * @param {HTMLInputElement} inputField - 输入框元素
      */
     addRecognitionIcon(captchaElement, inputField) {
@@ -2288,7 +2305,7 @@ export default {
             continue;
           }
 
-          // 检查URL是否匹配
+          // 检查 URL 是否匹配
           let isUrlMatch = false;
           if (!rule.url_pattern || rule.url_pattern === "*") {
             // 空或星号表示对所有网站生效
@@ -2303,7 +2320,7 @@ export default {
               const regex = new RegExp(regexPattern);
               isUrlMatch = regex.test(currentUrl);
             } catch (e) {
-              console.error("无效的正则表达式规则:", rule.url_pattern, e);
+              console.error("无效的正则表达式规则：", rule.url_pattern, e);
             }
           } else if (rule.url_pattern.includes("*")) {
             // 通配符匹配
@@ -2317,15 +2334,15 @@ export default {
             isUrlMatch = currentUrl.includes(rule.url_pattern);
           }
 
-          // 如果URL匹配，应用此规则的选择器
+          // 如果 URL 匹配，应用此规则的选择器
           if (isUrlMatch) {
-            // console.log(`匹配到规则: ${rule.url_pattern || '*'}`);
+            // console.log(`匹配到规则：${rule.url_pattern || '*'}`);
             // 添加验证码图片选择器
             if (
               rule.captcha_image_selector &&
               !captchaSelectors.includes(rule.captcha_image_selector)
             ) {
-              // console.log(`添加验证码选择器: ${rule.captcha_image_selector}`);
+              // console.log(`添加验证码选择器：${rule.captcha_image_selector}`);
               captchaSelectors.push(rule.captcha_image_selector);
             }
 
@@ -2334,7 +2351,7 @@ export default {
               rule.captcha_input_selector &&
               !inputSelectors.includes(rule.captcha_input_selector)
             ) {
-              // console.log(`添加输入框选择器: ${rule.captcha_input_selector}`);
+              // console.log(`添加输入框选择器：${rule.captcha_input_selector}`);
               inputSelectors.push(rule.captcha_input_selector);
             }
           }
@@ -2354,15 +2371,15 @@ export default {
 
           // 为每个验证码图片查找对应的输入框
           captchaImgs.forEach((captchaElement) => {
-            // 支持img和canvas两种类型
+            // 支持 img 和 canvas 两种类型
             if (captchaElement.tagName !== "IMG" && captchaElement.tagName !== "CANVAS") {
-              // console.log(`跳过非图片/canvas元素:`, captchaElement);
+              // console.log(`跳过非图片/canvas 元素:`, captchaElement);
               return;
             }
 
-            // 对于img元素，确保有src属性
+            // 对于 img 元素，确保有 src 属性
             if (captchaElement.tagName === "IMG" && !captchaElement.src) {
-              // console.log(`跳过没有src属性的图片元素`);
+              // console.log(`跳过没有 src 属性的图片元素`);
               return;
             }
 
@@ -2393,10 +2410,10 @@ export default {
      * 为验证码图片查找对应的输入框
      * @param {HTMLImageElement} captchaImg - 验证码图片元素
      * @param {Array} [customSelectors] - 自定义输入框选择器列表，可选
-     * @returns {HTMLInputElement|null} - 找到的输入框元素，或null
+     * @returns {HTMLInputElement|null} - 找到的输入框元素，或 null
      */
     findInputFieldForCaptcha(captchaImg, customSelectors) {
-      // 定义基础过滤条件，排除hidden类型的输入框
+      // 定义基础过滤条件，排除 hidden 类型的输入框
       const baseFilter = ':not([type="hidden"])';
       
       // 确定使用的选择器列表
@@ -2435,7 +2452,7 @@ export default {
             continue;
           }
 
-          // 检查URL是否匹配
+          // 检查 URL 是否匹配
           let isUrlMatch = false;
           if (!rule.url_pattern || rule.url_pattern === "*") {
             // 空或星号表示对所有网站生效
@@ -2464,7 +2481,7 @@ export default {
             isUrlMatch = currentUrl.includes(rule.url_pattern);
           }
 
-          // 如果URL匹配，应用此规则的选择器
+          // 如果 URL 匹配，应用此规则的选择器
           if (
             isUrlMatch &&
             rule.captcha_input_selector &&
@@ -2477,7 +2494,7 @@ export default {
 
       let inputField = null;
 
-      // 方法1: 先检查最近的父元素
+      // 方法 1: 先检查最近的父元素
       const parentElement = captchaImg.parentElement;
       if (parentElement) {
         for (const selector of inputSelectors) {
@@ -2493,7 +2510,7 @@ export default {
         }
       }
 
-      // 方法2: 如果在父元素中没找到，检查整个表单
+      // 方法 2: 如果在父元素中没找到，检查整个表单
       if (!inputField && parentElement) {
         // 向上查找表单元素
         let form = parentElement;
@@ -2516,7 +2533,7 @@ export default {
         }
       }
 
-      // 方法3: 如果仍然没有找到，检查整个文档
+      // 方法 3: 如果仍然没有找到，检查整个文档
       if (!inputField) {
         for (const selector of inputSelectors) {
           try {
@@ -2531,9 +2548,9 @@ export default {
         }
       }
 
-      // 方法4: 如果还没找到，尝试通过更一般的选择器查找
+      // 方法 4: 如果还没找到，尝试通过更一般的选择器查找
       if (!inputField) {
-        // 尝试查找任何非hidden类型的输入框
+        // 尝试查找任何非 hidden 类型的输入框
         const inputs = document.querySelectorAll('input:not([type="hidden"])');
         if (inputs.length > 0) {
           // 寻找名称或属性与验证码相关的输入框
@@ -2555,9 +2572,9 @@ export default {
             }
           }
 
-          // 如果仍然没有找到，使用第一个非hidden的输入框
+          // 如果仍然没有找到，使用第一个非 hidden 的输入框
           if (!inputField) {
-            // 确保找到的第一个输入框不是hidden类型
+            // 确保找到的第一个输入框不是 hidden 类型
             for (const input of inputs) {
               if (input.type !== "hidden") {
                 inputField = input;
@@ -2576,6 +2593,11 @@ export default {
      */
     async checkAndFetchCloudConfig() {
       try {
+        // 检查是否启用了自动获取云端规则功能
+        if (!this.settings.autoFetchCloudRules) {
+          return;
+        }
+        
         // 获取当前日期（格式：YYYY-MM-DD）
         const today = new Date().toISOString().split('T')[0];
         
@@ -2605,24 +2627,24 @@ export default {
           this.showToast("云端配置更新完成", "success");
         }
       } catch (error) {
-        console.error("自动获取云端配置失败:", error);
+        console.error("自动获取云端配置失败：", error);
         // 失败时不显示提示，避免影响用户体验
       }
     },
     
     /**
-     * 优化Canvas验证码图像
-     * @param {HTMLCanvasElement} canvasElement - canvas元素
+     * 优化 Canvas 验证码图像
+     * @param {HTMLCanvasElement} canvasElement - canvas 元素
      * @returns {Object} - 返回包含成功状态和数据的对象
      */
     optimizeCanvasImage(canvasElement) {
       try {
-        // 获取canvas上下文
+        // 获取 canvas 上下文
         const ctx = canvasElement.getContext('2d');
         if (!ctx) {
           return {
             success: false,
-            message: "无法获取Canvas上下文",
+            message: "无法获取 Canvas 上下文",
           };
         }
 
@@ -2630,7 +2652,7 @@ export default {
         const imageData = ctx.getImageData(0, 0, canvasElement.width, canvasElement.height);
         const data = imageData.data;
 
-        // 创建一个新的canvas用于保存优化后的图像
+        // 创建一个新的 canvas 用于保存优化后的图像
         const optimizedCanvas = document.createElement('canvas');
         optimizedCanvas.width = canvasElement.width;
         optimizedCanvas.height = canvasElement.height;
@@ -2639,10 +2661,10 @@ export default {
         // 复制原始图像数据
         optimizedCtx.putImageData(imageData, 0, 0);
 
-        // 转换为base64
+        // 转换为 base64
         const base64Data = optimizedCanvas.toDataURL("image/png").split(",")[1];
 
-        // 检查base64数据是否有效
+        // 检查 base64 数据是否有效
         if (!base64Data || base64Data.length < 100) {
           return {
             success: false,
@@ -2685,7 +2707,7 @@ export default {
       // 初始化验证码识别功能
       this.init();
     } catch (error) {
-      console.error("验证码识别插件挂载失败:", error);
+      console.error("验证码识别插件挂载失败：", error);
     }
   },
   created() {
@@ -2693,13 +2715,13 @@ export default {
     try {
       // Website Compatibility Handling
       if (window.location.host == "nportal.ntut.edu.tw") {
-        // console.log("检测到特殊网站: nportal.ntut.edu.tw，应用兼容性处理");
+        // console.log("检测到特殊网站：nportal.ntut.edu.tw，应用兼容性处理");
         const observer = new MutationObserver(function (mutations) {
           const authcodeElement = document.querySelector(".authcode.co");
           if (authcodeElement) {
             const captchaIcon = document.querySelector(".captcha-recognition-icon");
             if (captchaIcon) {
-              // console.log("应用nportal.ntut.edu.tw网站的特殊处理");
+              // console.log("应用 nportal.ntut.edu.tw 网站的特殊处理");
               captchaIcon.parentNode.removeChild(captchaIcon);
               authcodeElement.appendChild(captchaIcon);
               observer.disconnect();
@@ -2710,7 +2732,7 @@ export default {
       }
 
       if (window.location.host == "www.luogu.com.cn") {
-        // console.log("检测到特殊网站: www.luogu.com.cn，应用兼容性处理");
+        // console.log("检测到特殊网站：www.luogu.com.cn，应用兼容性处理");
         const styleluogu = document.createElement("style");
         styleluogu.textContent = `
           .l-form-layout .img .captcha-recognition-icon {
@@ -2723,7 +2745,7 @@ export default {
           if (authcodeElement) {
             const captchaIcon = document.querySelector(".captcha-recognition-icon");
             if (captchaIcon) {
-              // console.log("应用www.luogu.com.cn网站的特殊处理");
+              // console.log("应用 www.luogu.com.cn 网站的特殊处理");
               captchaIcon.parentNode.removeChild(captchaIcon);
               authcodeElement.parentNode.insertBefore(
                 captchaIcon,
@@ -2736,7 +2758,7 @@ export default {
         observer.observe(document.body, { childList: true, subtree: true });
       }
     } catch (error) {
-      console.error("验证码识别插件创建阶段出错:", error);
+      console.error("验证码识别插件创建阶段出错：", error);
     }
   },
 };

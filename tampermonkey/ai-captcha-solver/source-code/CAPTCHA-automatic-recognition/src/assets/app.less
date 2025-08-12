@@ -80,33 +80,49 @@ body.captcha-settings-open {
   overflow: hidden !important;
 }
 
-/* 设置弹窗样式 */
-.captcha-settings-modal {
+/* 遮罩层样式 */
+.captcha-settings-overlay {
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
   width: 100% !important;
   height: 100% !important;
   background-color: rgba(0, 0, 0, 0.5) !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
+  z-index: 2147483646 !important;
+  /* 比设置面板低一级 */
+}
+
+/* 设置面板样式 - 右侧固定 */
+.captcha-settings-modal {
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 400px !important;
+  height: 100vh !important;
+  padding-bottom: 60px !important;
+  background-color: white !important;
   z-index: 2147483647 !important;
   text-align: left !important;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1) !important;
+  transform: translateX(100%) !important;
+  transition: transform 0.3s linear !important;
   /* 最高的 z-index 值，确保在页面最上层 */
 }
 
+/* 设置面板显示状态 */
+.captcha-settings-modal.show {
+  transform: translateX(0) !important;
+}
+
 .captcha-settings-content {
-  background-color: white !important;
+  background-color: transparent !important;
   color: #333 !important;
   padding: 20px !important;
-  border-radius: 8px !important;
-  width: 450px !important;
-  max-width: 90% !important;
-  max-height: 90vh !important;
-  overflow-y: auto !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-  height: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow-y: scroll !important;
+  box-shadow: none !important;
   display: flex !important;
   flex-direction: column !important;
   padding-right: 15px !important;
@@ -194,6 +210,7 @@ body.captcha-settings-open {
   color: #777 !important;
   display: block !important;
   margin-top: 4px !important;
+  word-break: break-all !important;
 }
 
 /* 带按钮的 textarea 容器 */
@@ -228,8 +245,14 @@ body.captcha-settings-open {
   justify-content: flex-end !important;
   margin-top: 20px !important;
   gap: 10px !important;
-  position: relative !important;
+  position: absolute !important;
+  background: #fff !important;
+  width: 100%;
+  bottom: 0 !important;
+  left: 0 !important;
   z-index: 10 !important;
+  padding: 10px 15px;
+  box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .captcha-settings-buttons button {
@@ -490,7 +513,6 @@ img[style="z-index: 2; position: absolute; bottom: -11px; left: 206px; width: 88
 
 .settings-nav-item.active {
   color: #1a73e8 !important;
-  font-weight: bold !important;
 }
 
 .settings-nav-item.active::after {
@@ -506,17 +528,14 @@ img[style="z-index: 2; position: absolute; bottom: -11px; left: 206px; width: 88
 
 /* 设置内容区域 */
 .settings-content {
-  min-height: 420px !important;
   /* 增加最小高度 */
+  flex: 1 !important;
   position: relative !important;
 }
 
 /* 设置内容标签页 */
 .settings-content-tab {
   animation: captcha-fadeIn 0.3s ease !important;
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
   width: 100% !important;
 }
 
@@ -545,7 +564,6 @@ img[style="z-index: 2; position: absolute; bottom: -11px; left: 206px; width: 88
   flex-direction: column !important;
   overflow-y: auto !important;
   /* 添加滚动条，防止内容过多时溢出 */
-  max-height: 400px !important;
   /* 设置最大高度，与内容区域最小高度一致 */
 }
 
