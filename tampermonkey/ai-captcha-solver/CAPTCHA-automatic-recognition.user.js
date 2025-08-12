@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AI验证码自动识别填充-自用版
 // @namespace    https://github.com/anghunk/UserScript
-// @version      1.0.10
+// @version      1.0.11
 // @author       knight
 // @description  自动识别网页上的验证码并填充到输入框中，点击识别图标触发识别。
 // @license      Apache-2.0
@@ -17,13 +17,13 @@
 // @grant        GM_xmlhttpRequest
 // ==/UserScript==
 
-(t=>{if(typeof GM_addStyle=="function"){GM_addStyle(t);return}const o=document.createElement("style");o.textContent=t,document.head.append(o)})(` .captcha-recognition-container{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji",Segoe UI Symbol!important;font-size:14px!important;line-height:1.5!important;color:#333!important;box-sizing:border-box!important}.captcha-recognition-container *,.captcha-recognition-container *:before,.captcha-recognition-container *:after{box-sizing:border-box!important;font-family:inherit!important}.captcha-recognition-container input,.captcha-recognition-container textarea,.captcha-recognition-container select,.captcha-recognition-container button{font-family:inherit!important;font-size:inherit!important;line-height:inherit!important}.captcha-recognition-icon{display:inline-block!important;width:20px!important;height:20px!important;vertical-align:middle!important;margin-left:5px!important;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>')!important;background-size:contain!important;cursor:pointer!important;position:relative!important;z-index:999!important;opacity:.7!important;transition:opacity .2s!important}.captcha-recognition-icon:hover{opacity:1!important}.input-group-append{position:relative!important}.input-group-append .captcha-recognition-icon{position:absolute!important;left:100%!important}.captcha-recognition-loading{background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>')!important;animation:captcha-spin 1s linear infinite!important}@keyframes captcha-spin{0%{transform:rotate(0)}to{transform:rotate(360deg)}}.captcha-recognition-success{background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="green" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>')!important}.captcha-recognition-error{background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>')!important}body.captcha-settings-open{overflow:hidden!important}.captcha-settings-modal{position:fixed!important;top:0!important;left:0!important;width:100%!important;height:100%!important;background-color:#00000080!important;display:flex!important;justify-content:center!important;align-items:center!important;z-index:2147483647!important;text-align:left!important}.captcha-settings-content{background-color:#fff!important;color:#333!important;padding:20px 15px 20px 20px!important;border-radius:8px!important;width:450px!important;max-width:90%!important;max-height:90vh!important;overflow-y:auto!important;box-shadow:0 4px 12px #00000026!important;height:auto!important;display:flex!important;flex-direction:column!important}.captcha-settings-content::-webkit-scrollbar,.settings-card::-webkit-scrollbar,.domain-textarea::-webkit-scrollbar,.captcha-settings-content textarea::-webkit-scrollbar{width:4px!important;height:8px!important}.captcha-settings-content::-webkit-scrollbar-track,.settings-card::-webkit-scrollbar-track,.domain-textarea::-webkit-scrollbar-track,.captcha-settings-content textarea::-webkit-scrollbar-track{background:#f1f1f1!important;border-radius:4px!important}.captcha-settings-content::-webkit-scrollbar-thumb,.settings-card::-webkit-scrollbar-thumb,.domain-textarea::-webkit-scrollbar-thumb,.captcha-settings-content textarea::-webkit-scrollbar-thumb{background:#ccc!important;border-radius:4px!important}.captcha-settings-content h3{margin-top:0!important;color:#333!important;font-size:18px!important;margin-bottom:16px!important;text-align:center!important;font-weight:700!important}.captcha-settings-content h3 span{font-size:14px!important}.captcha-settings-item{margin-bottom:12px!important;display:flex!important;flex-direction:column}.captcha-settings-item label{display:block!important;margin-bottom:4px!important;color:#555!important;font-size:14px!important}.captcha-settings-item input[type=text],.captcha-settings-item select,.captcha-settings-item textarea{width:100%!important;padding:0 8px!important;border:1px solid #ddd!important;background:none!important;border-radius:4px!important;font-size:14px!important;box-sizing:border-box!important;background:#fff!important;color:#333!important;margin:0!important}.captcha-settings-item input[type=text],.captcha-settings-item select{height:33px!important}.captcha-settings-item textarea{resize:vertical!important;min-height:80px!important}.captcha-settings-item small{font-size:12px!important;color:#777!important;display:block!important;margin-top:4px!important}.textarea-with-button{position:relative!important;display:flex!important;flex-direction:column!important}.use-default-prompt{position:absolute!important;top:5px!important;right:5px!important;background-color:#f1f1f1!important;border:1px solid #ddd!important;border-radius:4px!important;padding:4px 8px!important;font-size:12px!important;cursor:pointer!important;color:#333!important;transition:background-color .2s!important}.use-default-prompt:hover{background-color:#e4e4e4!important}.captcha-settings-buttons{display:flex!important;justify-content:flex-end!important;margin-top:20px!important;gap:10px!important;position:relative!important;z-index:10!important}.captcha-settings-buttons button{padding:8px 16px!important;border:none!important;border-radius:4px!important;cursor:pointer!important;font-size:14px!important;transition:background-color .2s!important}.captcha-settings-buttons button:first-child{background-color:#1a73e8!important;color:#fff!important}.captcha-settings-buttons button:first-child:hover{background-color:#1557b0!important}.captcha-settings-buttons button:last-child{background-color:#f1f1f1!important;color:#333!important}.captcha-settings-buttons button:last-child:hover{background-color:#e4e4e4!important}.dev-settings-button{width:50px!important;height:50px!important;display:flex!important;align-items:center!important;justify-content:center!important;position:fixed!important;bottom:20px!important;right:20px!important;background-color:#fff!important;color:#fff!important;border-radius:50%!important;cursor:pointer!important;z-index:9999!important;font-size:14px!important;box-shadow:0 2px 5px #0003!important;transition:background-color .2s!important}.dev-settings-button svg{color:#1557b0}.dev-settings-button:hover{opacity:.9}#captcha-toast-container{position:fixed!important;top:20px!important;right:20px!important;z-index:9999!important;display:flex!important;flex-direction:column!important;gap:10px!important;pointer-events:none!important;text-align:left!important}.captcha-toast{width:280px!important;padding:12px 16px!important;border-radius:4px!important;box-shadow:0 4px 12px #00000026!important;color:#fff!important;font-size:14px!important;opacity:0!important;transform:translateY(-20px)!important;transition:all .3s ease!important;pointer-events:auto!important;word-break:break-word!important;text-align:left!important}.captcha-toast-show{opacity:1!important;transform:translateY(0)!important}.captcha-toast-hide{opacity:0!important;transform:translateY(-20px)!important}.captcha-toast-info{background-color:#1a73e8!important}.captcha-toast-success{background-color:#4caf50!important}.captcha-toast-error{background-color:#f44336!important}.input-with-button{position:relative!important;display:flex!important;align-items:center!important}.input-with-button input{flex:1!important}.test-api-button{background-color:#1a73e8!important;color:#fff!important;border:none!important;border-radius:4px!important;padding:8px 12px!important;font-size:14px!important;cursor:pointer!important;transition:background-color .2s,color .2s!important;min-width:80px!important;display:flex!important;justify-content:center!important;align-items:center!important;height:33px!important;margin-left:10px!important}.captcha-settings-tip{margin:16px 0!important;padding:12px!important;background-color:#f8f9fa!important;border-left:4px solid #1a73e8!important;border-radius:4px!important;font-size:13px!important;color:#333!important}.captcha-settings-tip p{margin:0 0 8px!important}.captcha-settings-tip ol{margin:8px 0 0!important;padding-left:24px!important}.captcha-settings-tip li{margin-bottom:4px!important}.test-api-button:hover{background-color:#1557b0!important}.test-api-button.test-loading{background-color:#f1f1f1!important;color:#666!important;position:relative!important}.test-api-button.test-loading:after{content:""!important;position:absolute!important;width:12px!important;height:12px!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%);border:2px solid #666!important;border-radius:50%!important;border-top-color:transparent!important;animation:captcha-spin-transform 1s linear infinite!important}@keyframes captcha-spin-transform{0%{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}.test-api-button.test-success{background-color:#4caf50!important;color:#fff!important}.test-api-button.test-error{background-color:#f44336!important;color:#fff!important}img[style="z-index: 2; position: absolute; bottom: -11px; left: 206px; width: 88px; height: 40px;"]+.captcha-recognition-icon{position:absolute!important;left:270px!important}.authcode.co>a:nth-child(2)>#authImage+.captcha-recognition-icon{display:none!important}#yzCode{position:relative}#yzCode>.captcha-recognition-icon{position:absolute!important;right:0!important}.code-plane .img-code+.captcha-recognition-icon{position:absolute!important}.settings-nav{display:flex!important;border-bottom:1px solid #eee!important;margin-bottom:20px!important;padding-bottom:2px!important}.settings-nav::-webkit-scrollbar{display:none!important}.settings-nav-item{padding:10px 15px!important;cursor:pointer!important;font-size:14px!important;color:#666!important;position:relative!important;transition:all .3s!important;-webkit-user-select:none!important;user-select:none!important;white-space:nowrap!important}.settings-nav-item:hover{color:#1a73e8!important}.settings-nav-item.active{color:#1a73e8!important;font-weight:700!important}.settings-nav-item.active:after{content:""!important;position:absolute!important;bottom:-2px!important;left:0!important;width:100%!important;height:2px!important;background-color:#1a73e8!important;border-radius:2px!important}.settings-content{min-height:420px!important;position:relative!important}.settings-content-tab{animation:captcha-fadeIn .3s ease!important;position:absolute!important;top:0!important;left:0!important;width:100%!important}@keyframes captcha-fadeIn{0%{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.settings-card{background-color:#f9f9f9!important;border-radius:8px!important;padding:15px!important;margin-bottom:15px!important;border:1px solid #eee!important;box-shadow:0 2px 4px #0000000d!important;height:100%!important;display:flex!important;flex-direction:column!important;overflow-y:auto!important;max-height:400px!important}.settings-card-title{font-weight:700!important;margin-bottom:12px!important;color:#333!important;font-size:15px!important;display:flex!important;align-items:center!important;justify-content:space-between!important}.settings-card-title .api-type{color:#1a73e8!important}.settings-section{margin-bottom:20px!important}.settings-section-title{font-weight:700!important;margin-bottom:10px!important;color:#333!important;font-size:15px!important;border-bottom:1px solid #eee!important;padding-bottom:5px!important}.advanced-settings-warning{font-size:12px!important;color:#ff4d4f!important;margin-bottom:10px!important;font-weight:700!important;padding:8px!important;background-color:#fff2f0!important;border-radius:4px!important;border:1px solid #ffccc7!important}.tutorial-link{font-size:12px!important;color:#1890ff!important;margin-left:8px!important;text-decoration:none!important;font-weight:400!important}.tutorial-link:hover{text-decoration:underline!important}.custom-selectors{display:flex!important;flex-direction:column!important;gap:8px!important}.selector-item{display:flex!important;align-items:center!important;gap:8px!important}.selector-item input{flex:1!important}.remove-selector{background-color:#ff4d4f!important;color:#fff!important;border:none!important;border-radius:50%!important;width:24px!important;height:24px!important;font-size:16px!important;line-height:1!important;cursor:pointer!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:0!important}.add-selector{margin-top:8px!important;background-color:#1890ff!important;color:#fff!important;border:none!important;border-radius:4px!important;padding:4px 12px!important;font-size:14px!important;cursor:pointer!important;align-self:flex-start!important}.add-selector:hover{background-color:#40a9ff!important}.remove-selector:hover{background-color:#ff7875!important}.domain-textarea{width:100%!important;border:1px solid #ddd!important;border-radius:4px!important;padding:8px!important;resize:vertical!important;font-family:monospace!important;font-size:14px!important}.reload-rules-button{display:inline-flex!important;align-items:center!important;justify-content:center!important;padding:6px 12px!important;height:34px!important;font-size:14px!important;border-radius:4px!important;border:1px solid #ddd!important;background-color:#f7f7f7!important;cursor:pointer!important;transition:all .3s!important;min-width:120px!important}.reload-rules-button:hover{background-color:#e7e7e7!important}.reload-rules-button.test-loading{background-color:#f5f5f5!important;position:relative!important;color:transparent!important}.reload-rules-button.test-loading:after{content:""!important;width:16px!important;height:16px!important;border:2px solid #666!important;border-top-color:transparent!important;border-radius:50%!important;position:absolute!important;left:50%!important;top:50%!important;margin-left:-8px!important;margin-top:-8px!important;animation:captcha-spin 1s linear infinite!important}.reload-rules-button.test-success{background-color:#eaf7ea!important;border-color:#c3e6c3!important;color:#2a862a!important}.reload-rules-button.test-error{background-color:#fce7e7!important;border-color:#f5c2c2!important;color:#d63030!important}.rules-management{display:flex!important;flex-direction:column!important;gap:10px!important}.rules-url-input{display:flex!important;flex-direction:column!important;gap:5px!important}.rules-url-input input{width:100%!important;padding:8px!important;border:1px solid #ddd!important;border-radius:4px!important;font-size:14px!important}.rules-url-input small{color:#666!important;font-size:12px!important}@media (max-width: 768px){.settings-nav-item{padding:10px!important}} `);
+(t=>{if(typeof GM_addStyle=="function"){GM_addStyle(t);return}const o=document.createElement("style");o.textContent=t,document.head.append(o)})(` .captcha-recognition-container{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji",Segoe UI Symbol!important;font-size:14px!important;line-height:1.5!important;color:#333!important;box-sizing:border-box!important}.captcha-recognition-container *,.captcha-recognition-container *:before,.captcha-recognition-container *:after{box-sizing:border-box!important;font-family:inherit!important}.captcha-recognition-container input,.captcha-recognition-container textarea,.captcha-recognition-container select,.captcha-recognition-container button{font-family:inherit!important;font-size:inherit!important;line-height:inherit!important}.captcha-recognition-icon{display:inline-block!important;width:20px!important;height:20px!important;vertical-align:middle!important;margin-left:5px!important;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>')!important;background-size:contain!important;cursor:pointer!important;position:relative!important;z-index:999!important;opacity:.7!important;transition:opacity .2s!important}.captcha-recognition-icon:hover{opacity:1!important}.input-group-append{position:relative!important}.input-group-append .captcha-recognition-icon{position:absolute!important;left:100%!important}.captcha-recognition-loading{background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>')!important;animation:captcha-spin 1s linear infinite!important}@keyframes captcha-spin{0%{transform:rotate(0)}to{transform:rotate(360deg)}}.captcha-recognition-success{background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="green" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>')!important}.captcha-recognition-error{background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>')!important}body.captcha-settings-open{overflow:hidden!important}.captcha-settings-overlay{position:fixed!important;top:0!important;left:0!important;width:100%!important;height:100%!important;background-color:#00000080!important;z-index:2147483646!important}.captcha-settings-modal{position:fixed!important;top:0!important;right:0!important;width:100%!important;max-width:400px!important;height:100vh!important;padding-bottom:60px!important;background-color:#fff!important;z-index:2147483647!important;text-align:left!important;box-shadow:-2px 0 10px #0000001a!important;transform:translate(100%)!important;transition:transform .3s linear!important}.captcha-settings-modal.show{transform:translate(0)!important}.captcha-settings-content{background-color:transparent!important;color:#333!important;padding:20px 15px 20px 20px!important;width:100%!important;height:100%!important;overflow-y:scroll!important;box-shadow:none!important;display:flex!important;flex-direction:column!important}.captcha-settings-content::-webkit-scrollbar,.settings-card::-webkit-scrollbar,.domain-textarea::-webkit-scrollbar,.captcha-settings-content textarea::-webkit-scrollbar{width:4px!important;height:8px!important}.captcha-settings-content::-webkit-scrollbar-track,.settings-card::-webkit-scrollbar-track,.domain-textarea::-webkit-scrollbar-track,.captcha-settings-content textarea::-webkit-scrollbar-track{background:#f1f1f1!important;border-radius:4px!important}.captcha-settings-content::-webkit-scrollbar-thumb,.settings-card::-webkit-scrollbar-thumb,.domain-textarea::-webkit-scrollbar-thumb,.captcha-settings-content textarea::-webkit-scrollbar-thumb{background:#ccc!important;border-radius:4px!important}.captcha-settings-content h3{margin-top:0!important;color:#333!important;font-size:18px!important;margin-bottom:16px!important;text-align:center!important;font-weight:700!important}.captcha-settings-content h3 span{font-size:14px!important}.captcha-settings-item{margin-bottom:12px!important;display:flex!important;flex-direction:column}.captcha-settings-item label{display:block!important;margin-bottom:4px!important;color:#555!important;font-size:14px!important}.captcha-settings-item input[type=text],.captcha-settings-item select,.captcha-settings-item textarea{width:100%!important;padding:0 8px!important;border:1px solid #ddd!important;background:none!important;border-radius:4px!important;font-size:14px!important;box-sizing:border-box!important;background:#fff!important;color:#333!important;margin:0!important}.captcha-settings-item input[type=text],.captcha-settings-item select{height:33px!important}.captcha-settings-item textarea{resize:vertical!important;min-height:80px!important}.captcha-settings-item small{font-size:12px!important;color:#777!important;display:block!important;margin-top:4px!important;word-break:break-all!important}.textarea-with-button{position:relative!important;display:flex!important;flex-direction:column!important}.use-default-prompt{position:absolute!important;top:5px!important;right:5px!important;background-color:#f1f1f1!important;border:1px solid #ddd!important;border-radius:4px!important;padding:4px 8px!important;font-size:12px!important;cursor:pointer!important;color:#333!important;transition:background-color .2s!important}.use-default-prompt:hover{background-color:#e4e4e4!important}.captcha-settings-buttons{display:flex!important;justify-content:flex-end!important;margin-top:20px!important;gap:10px!important;position:absolute!important;background:#fff!important;width:100%;bottom:0!important;left:0!important;z-index:10!important;padding:10px 15px;box-shadow:1px 2px 5px #0000001a}.captcha-settings-buttons button{padding:8px 16px!important;border:none!important;border-radius:4px!important;cursor:pointer!important;font-size:14px!important;transition:background-color .2s!important}.captcha-settings-buttons button:first-child{background-color:#1a73e8!important;color:#fff!important}.captcha-settings-buttons button:first-child:hover{background-color:#1557b0!important}.captcha-settings-buttons button:last-child{background-color:#f1f1f1!important;color:#333!important}.captcha-settings-buttons button:last-child:hover{background-color:#e4e4e4!important}.dev-settings-button{width:50px!important;height:50px!important;display:flex!important;align-items:center!important;justify-content:center!important;position:fixed!important;bottom:20px!important;right:20px!important;background-color:#fff!important;color:#fff!important;border-radius:50%!important;cursor:pointer!important;z-index:9999!important;font-size:14px!important;box-shadow:0 2px 5px #0003!important;transition:background-color .2s!important}.dev-settings-button svg{color:#1557b0}.dev-settings-button:hover{opacity:.9}#captcha-toast-container{position:fixed!important;top:20px!important;right:20px!important;z-index:9999!important;display:flex!important;flex-direction:column!important;gap:10px!important;pointer-events:none!important;text-align:left!important}.captcha-toast{width:280px!important;padding:12px 16px!important;border-radius:4px!important;box-shadow:0 4px 12px #00000026!important;color:#fff!important;font-size:14px!important;opacity:0!important;transform:translateY(-20px)!important;transition:all .3s ease!important;pointer-events:auto!important;word-break:break-word!important;text-align:left!important}.captcha-toast-show{opacity:1!important;transform:translateY(0)!important}.captcha-toast-hide{opacity:0!important;transform:translateY(-20px)!important}.captcha-toast-info{background-color:#1a73e8!important}.captcha-toast-success{background-color:#4caf50!important}.captcha-toast-error{background-color:#f44336!important}.input-with-button{position:relative!important;display:flex!important;align-items:center!important}.input-with-button input{flex:1!important}.test-api-button{background-color:#1a73e8!important;color:#fff!important;border:none!important;border-radius:4px!important;padding:8px 12px!important;font-size:14px!important;cursor:pointer!important;transition:background-color .2s,color .2s!important;min-width:80px!important;display:flex!important;justify-content:center!important;align-items:center!important;height:33px!important;margin-left:10px!important}.captcha-settings-tip{margin:16px 0!important;padding:12px!important;background-color:#f8f9fa!important;border-left:4px solid #1a73e8!important;border-radius:4px!important;font-size:13px!important;color:#333!important}.captcha-settings-tip p{margin:0 0 8px!important}.captcha-settings-tip ol{margin:8px 0 0!important;padding-left:24px!important}.captcha-settings-tip li{margin-bottom:4px!important}.test-api-button:hover{background-color:#1557b0!important}.test-api-button.test-loading{background-color:#f1f1f1!important;color:#666!important;position:relative!important}.test-api-button.test-loading:after{content:""!important;position:absolute!important;width:12px!important;height:12px!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%);border:2px solid #666!important;border-radius:50%!important;border-top-color:transparent!important;animation:captcha-spin-transform 1s linear infinite!important}@keyframes captcha-spin-transform{0%{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}.test-api-button.test-success{background-color:#4caf50!important;color:#fff!important}.test-api-button.test-error{background-color:#f44336!important;color:#fff!important}img[style="z-index: 2; position: absolute; bottom: -11px; left: 206px; width: 88px; height: 40px;"]+.captcha-recognition-icon{position:absolute!important;left:270px!important}.authcode.co>a:nth-child(2)>#authImage+.captcha-recognition-icon{display:none!important}#yzCode{position:relative}#yzCode>.captcha-recognition-icon{position:absolute!important;right:0!important}.code-plane .img-code+.captcha-recognition-icon{position:absolute!important}.settings-nav{display:flex!important;border-bottom:1px solid #eee!important;margin-bottom:20px!important;padding-bottom:2px!important}.settings-nav::-webkit-scrollbar{display:none!important}.settings-nav-item{padding:10px 15px!important;cursor:pointer!important;font-size:14px!important;color:#666!important;position:relative!important;transition:all .3s!important;-webkit-user-select:none!important;user-select:none!important;white-space:nowrap!important}.settings-nav-item:hover,.settings-nav-item.active{color:#1a73e8!important}.settings-nav-item.active:after{content:""!important;position:absolute!important;bottom:-2px!important;left:0!important;width:100%!important;height:2px!important;background-color:#1a73e8!important;border-radius:2px!important}.settings-content{flex:1!important;position:relative!important}.settings-content-tab{animation:captcha-fadeIn .3s ease!important;width:100%!important}@keyframes captcha-fadeIn{0%{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.settings-card{background-color:#f9f9f9!important;border-radius:8px!important;padding:15px!important;margin-bottom:15px!important;border:1px solid #eee!important;box-shadow:0 2px 4px #0000000d!important;height:100%!important;display:flex!important;flex-direction:column!important;overflow-y:auto!important}.settings-card-title{font-weight:700!important;margin-bottom:12px!important;color:#333!important;font-size:15px!important;display:flex!important;align-items:center!important;justify-content:space-between!important}.settings-card-title .api-type{color:#1a73e8!important}.settings-section{margin-bottom:20px!important}.settings-section-title{font-weight:700!important;margin-bottom:10px!important;color:#333!important;font-size:15px!important;border-bottom:1px solid #eee!important;padding-bottom:5px!important}.advanced-settings-warning{font-size:12px!important;color:#ff4d4f!important;margin-bottom:10px!important;font-weight:700!important;padding:8px!important;background-color:#fff2f0!important;border-radius:4px!important;border:1px solid #ffccc7!important}.tutorial-link{font-size:12px!important;color:#1890ff!important;margin-left:8px!important;text-decoration:none!important;font-weight:400!important}.tutorial-link:hover{text-decoration:underline!important}.custom-selectors{display:flex!important;flex-direction:column!important;gap:8px!important}.selector-item{display:flex!important;align-items:center!important;gap:8px!important}.selector-item input{flex:1!important}.remove-selector{background-color:#ff4d4f!important;color:#fff!important;border:none!important;border-radius:50%!important;width:24px!important;height:24px!important;font-size:16px!important;line-height:1!important;cursor:pointer!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:0!important}.add-selector{margin-top:8px!important;background-color:#1890ff!important;color:#fff!important;border:none!important;border-radius:4px!important;padding:4px 12px!important;font-size:14px!important;cursor:pointer!important;align-self:flex-start!important}.add-selector:hover{background-color:#40a9ff!important}.remove-selector:hover{background-color:#ff7875!important}.domain-textarea{width:100%!important;border:1px solid #ddd!important;border-radius:4px!important;padding:8px!important;resize:vertical!important;font-family:monospace!important;font-size:14px!important}.reload-rules-button{display:inline-flex!important;align-items:center!important;justify-content:center!important;padding:6px 12px!important;height:34px!important;font-size:14px!important;border-radius:4px!important;border:1px solid #ddd!important;background-color:#f7f7f7!important;cursor:pointer!important;transition:all .3s!important;min-width:120px!important}.reload-rules-button:hover{background-color:#e7e7e7!important}.reload-rules-button.test-loading{background-color:#f5f5f5!important;position:relative!important;color:transparent!important}.reload-rules-button.test-loading:after{content:""!important;width:16px!important;height:16px!important;border:2px solid #666!important;border-top-color:transparent!important;border-radius:50%!important;position:absolute!important;left:50%!important;top:50%!important;margin-left:-8px!important;margin-top:-8px!important;animation:captcha-spin 1s linear infinite!important}.reload-rules-button.test-success{background-color:#eaf7ea!important;border-color:#c3e6c3!important;color:#2a862a!important}.reload-rules-button.test-error{background-color:#fce7e7!important;border-color:#f5c2c2!important;color:#d63030!important}.rules-management{display:flex!important;flex-direction:column!important;gap:10px!important}.rules-url-input{display:flex!important;flex-direction:column!important;gap:5px!important}.rules-url-input input{width:100%!important;padding:8px!important;border:1px solid #ddd!important;border-radius:4px!important;font-size:14px!important}.rules-url-input small{color:#666!important;font-size:12px!important}@media (max-width: 768px){.settings-nav-item{padding:10px!important}} `);
 
 (function (vue) {
   'use strict';
 
   const name = "CAPTCHA-automatic-recognition";
-  const version = "1.0.10";
+  const version = "1.0.11";
   const author = "knight";
   const description = "Automatically recognize the CAPTCHA on the webpage and fill it into the input box, click the recognition icon to trigger recognition.";
   const type = "module";
@@ -3009,15 +3009,18 @@
           // 通知设置
           showNotification: true,
           // 是否显示右上角通知，默认开启
+          // 云端规则设置
+          autoFetchCloudRules: false,
+          // 是否每日首次运行时自动获取云端规则，默认关闭
           // 自定义选择器
           customCaptchaSelectors: [],
           customInputSelectors: [],
           // 禁用域名列表
           disabledDomains: "",
           // 不启用验证码功能的网站域名列表，支持正则和通配符
-          // 规则URL
+          // 规则 URL
           rulesUrl: "https://ghfast.top/https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json"
-          // 规则文件URL
+          // 规则文件 URL
         },
         // 是否显示设置面板
         showSettings: false,
@@ -3062,8 +3065,8 @@
     },
     methods: {
       /**
-       * 获取API类型名称
-       * @param {string} apiType - API类型
+       * 获取 API 类型名称
+       * @param {string} apiType - API 类型
        * @returns {string} - 名称
        */
       getApiTypeName(apiType) {
@@ -3191,7 +3194,7 @@
        */
       async recognizeCaptcha(base64Image) {
         if (!this.isApiConfigured()) {
-          console.error("未配置验证码识别API");
+          console.error("未配置验证码识别 API");
           this.showToast("请先配置验证码识别 API", "error");
           this.openSettings();
           return "";
@@ -3213,7 +3216,7 @@
               result = await this.recognizeWithDdddocr(base64Image);
               break;
             default:
-              this.showToast(`未知的API类型: ${this.settings.apiType}`, "error");
+              this.showToast(`未知的 API 类型：${this.settings.apiType}`, "error");
               return "";
           }
           if (result) {
@@ -3250,8 +3253,8 @@
         }
       },
       /**
-       * 将图片或canvas转换为 base64 格式
-       * @param {HTMLImageElement|HTMLCanvasElement} element - 图片或canvas元素
+       * 将图片或 canvas 转换为 base64 格式
+       * @param {HTMLImageElement|HTMLCanvasElement} element - 图片或 canvas 元素
        * @returns {Object} - 返回包含成功状态和数据的对象
        */
       imageToBase64(element) {
@@ -3444,7 +3447,7 @@
         return "";
       },
       /**
-       * 使用通义千问 API 识别验证码（新版API格式，messages/content结构）
+       * 使用通义千问 API 识别验证码（新版 API 格式，messages/content 结构）
        */
       async recognizeWithQwen(base64Image) {
         const apiUrl = this.settings.qwenApiUrl || "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
@@ -3566,7 +3569,7 @@
                   const regex = new RegExp(regexPattern);
                   isUrlMatch = regex.test(currentUrl);
                 } catch (e) {
-                  console.error("无效的正则表达式规则:", rule.url_pattern, e);
+                  console.error("无效的正则表达式规则：", rule.url_pattern, e);
                 }
               } else if (rule.url_pattern.includes("*")) {
                 const escapedPattern = rule.url_pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
@@ -3635,7 +3638,7 @@
               }
             }
           } catch (error) {
-            console.error("检测验证码时出错:", error);
+            console.error("检测验证码时出错：", error);
           }
         }, 500);
       },
@@ -3680,7 +3683,7 @@
             });
           });
         } catch (error) {
-          console.error("添加验证码识别图标时出错:", error);
+          console.error("添加验证码识别图标时出错：", error);
         }
       },
       /**
@@ -3710,7 +3713,7 @@
               base64Result = this.imageToBase64(captchaImg);
             }
             if (!base64Result.success) {
-              console.error("验证码转换失败:", base64Result.message);
+              console.error("验证码转换失败：", base64Result.message);
               this.showToast(base64Result.message, "error");
               icon.classList.remove("captcha-recognition-loading");
               icon.classList.add("captcha-recognition-error");
@@ -3738,9 +3741,9 @@
               if (this.settings.copyToClipboard) {
                 try {
                   await navigator.clipboard.writeText(text);
-                  this.showToast(`已将验证码复制到剪贴板: ${text}`, "success");
+                  this.showToast(`已将验证码复制到剪贴板：${text}`, "success");
                 } catch (clipboardError) {
-                  console.error("使用Clipboard API失败，尝试传统方法", clipboardError);
+                  console.error("使用 Clipboard API 失败，尝试传统方法", clipboardError);
                   const textarea = document.createElement("textarea");
                   textarea.value = text;
                   textarea.style.position = "fixed";
@@ -3768,7 +3771,7 @@
               await navigator.clipboard.writeText(text);
               this.showToast(`已将验证码复制到剪贴板`, "success");
             } catch (clipboardError) {
-              console.error("使用Clipboard API失败，尝试传统方法", clipboardError);
+              console.error("使用 Clipboard API 失败，尝试传统方法", clipboardError);
               const textarea = document.createElement("textarea");
               textarea.value = text;
               textarea.style.position = "fixed";
@@ -3983,9 +3986,9 @@
               }
             }
           } catch (error) {
-            console.error("初始化验证码识别功能失败:", error);
+            console.error("初始化验证码识别功能失败：", error);
             this.showToast(
-              `初始化验证码识别功能失败: ${error.message || "未知错误"}`,
+              `初始化验证码识别功能失败：${error.message || "未知错误"}`,
               "error"
             );
           }
@@ -4290,7 +4293,7 @@
                 return true;
               }
             } catch (e) {
-              console.error("无效的正则表达式:", domain, e);
+              console.error("无效的正则表达式：", domain, e);
             }
             continue;
           }
@@ -4302,7 +4305,7 @@
                 return true;
               }
             } catch (e) {
-              console.error("无效的通配符模式:", domain, e);
+              console.error("无效的通配符模式：", domain, e);
             }
             continue;
           }
@@ -4313,8 +4316,8 @@
         return false;
       },
       /**
-       * 为验证码元素(图片或canvas)添加识别图标
-       * @param {HTMLImageElement|HTMLCanvasElement} captchaElement - 验证码元素(图片或canvas)
+       * 为验证码元素 (图片或 canvas) 添加识别图标
+       * @param {HTMLImageElement|HTMLCanvasElement} captchaElement - 验证码元素 (图片或 canvas)
        * @param {HTMLInputElement} inputField - 输入框元素
        */
       addRecognitionIcon(captchaElement, inputField) {
@@ -4369,7 +4372,7 @@
                 const regex = new RegExp(regexPattern);
                 isUrlMatch = regex.test(currentUrl);
               } catch (e) {
-                console.error("无效的正则表达式规则:", rule.url_pattern, e);
+                console.error("无效的正则表达式规则：", rule.url_pattern, e);
               }
             } else if (rule.url_pattern.includes("*")) {
               const escapedPattern = rule.url_pattern.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*");
@@ -4419,7 +4422,7 @@
        * 为验证码图片查找对应的输入框
        * @param {HTMLImageElement} captchaImg - 验证码图片元素
        * @param {Array} [customSelectors] - 自定义输入框选择器列表，可选
-       * @returns {HTMLInputElement|null} - 找到的输入框元素，或null
+       * @returns {HTMLInputElement|null} - 找到的输入框元素，或 null
        */
       findInputFieldForCaptcha(captchaImg, customSelectors) {
         const baseFilter = ':not([type="hidden"])';
@@ -4548,6 +4551,9 @@
        */
       async checkAndFetchCloudConfig() {
         try {
+          if (!this.settings.autoFetchCloudRules) {
+            return;
+          }
           const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
           let lastConfigUpdate;
           if (typeof GM_getValue !== "undefined") {
@@ -4566,12 +4572,12 @@
             this.showToast("云端配置更新完成", "success");
           }
         } catch (error) {
-          console.error("自动获取云端配置失败:", error);
+          console.error("自动获取云端配置失败：", error);
         }
       },
       /**
-       * 优化Canvas验证码图像
-       * @param {HTMLCanvasElement} canvasElement - canvas元素
+       * 优化 Canvas 验证码图像
+       * @param {HTMLCanvasElement} canvasElement - canvas 元素
        * @returns {Object} - 返回包含成功状态和数据的对象
        */
       optimizeCanvasImage(canvasElement) {
@@ -4580,7 +4586,7 @@
           if (!ctx) {
             return {
               success: false,
-              message: "无法获取Canvas上下文"
+              message: "无法获取 Canvas 上下文"
             };
           }
           const imageData = ctx.getImageData(0, 0, canvasElement.width, canvasElement.height);
@@ -4630,7 +4636,7 @@
         }
         this.init();
       } catch (error) {
-        console.error("验证码识别插件挂载失败:", error);
+        console.error("验证码识别插件挂载失败：", error);
       }
       this.$nextTick(() => {
         this.autoResize();
@@ -4677,7 +4683,7 @@
           observer.observe(document.body, { childList: true, subtree: true });
         }
       } catch (error) {
-        console.error("验证码识别插件创建阶段出错:", error);
+        console.error("验证码识别插件创建阶段出错：", error);
       }
     },
     watch: {
@@ -4701,148 +4707,150 @@
   const _hoisted_3 = [
     _hoisted_2
   ];
-  const _hoisted_4 = {
-    key: 1,
-    class: "captcha-settings-modal"
-  };
-  const _hoisted_5 = { class: "captcha-settings-content" };
-  const _hoisted_6 = { class: "settings-nav" };
-  const _hoisted_7 = { class: "settings-content" };
-  const _hoisted_8 = {
+  const _hoisted_4 = { class: "captcha-settings-content" };
+  const _hoisted_5 = { class: "settings-nav" };
+  const _hoisted_6 = { class: "settings-content" };
+  const _hoisted_7 = {
     key: 0,
     class: "settings-content-tab"
   };
-  const _hoisted_9 = { class: "settings-card" };
-  const _hoisted_10 = { class: "settings-card-title" };
-  const _hoisted_11 = /* @__PURE__ */ vue.createElementVNode("span", null, "AI服务商设置", -1);
-  const _hoisted_12 = { class: "api-type" };
-  const _hoisted_13 = { class: "captcha-settings-item" };
-  const _hoisted_14 = /* @__PURE__ */ vue.createElementVNode("label", null, "API 类型：", -1);
-  const _hoisted_15 = /* @__PURE__ */ vue.createElementVNode("option", { value: "openai" }, "OpenAI", -1);
-  const _hoisted_16 = /* @__PURE__ */ vue.createElementVNode("option", { value: "gemini" }, "Google Gemini", -1);
-  const _hoisted_17 = /* @__PURE__ */ vue.createElementVNode("option", { value: "qwen" }, "阿里云通义千问", -1);
-  const _hoisted_18 = /* @__PURE__ */ vue.createElementVNode("option", { value: "ddddocr" }, "ddddocr", -1);
-  const _hoisted_19 = [
+  const _hoisted_8 = { class: "settings-card" };
+  const _hoisted_9 = { class: "settings-card-title" };
+  const _hoisted_10 = /* @__PURE__ */ vue.createElementVNode("span", null, "AI 服务商设置", -1);
+  const _hoisted_11 = { class: "api-type" };
+  const _hoisted_12 = { class: "captcha-settings-item" };
+  const _hoisted_13 = /* @__PURE__ */ vue.createElementVNode("label", null, "API 类型：", -1);
+  const _hoisted_14 = /* @__PURE__ */ vue.createElementVNode("option", { value: "openai" }, "OpenAI", -1);
+  const _hoisted_15 = /* @__PURE__ */ vue.createElementVNode("option", { value: "gemini" }, "Google Gemini", -1);
+  const _hoisted_16 = /* @__PURE__ */ vue.createElementVNode("option", { value: "qwen" }, "阿里云通义千问", -1);
+  const _hoisted_17 = /* @__PURE__ */ vue.createElementVNode("option", { value: "ddddocr" }, "ddddocr", -1);
+  const _hoisted_18 = [
+    _hoisted_14,
     _hoisted_15,
     _hoisted_16,
-    _hoisted_17,
-    _hoisted_18
+    _hoisted_17
   ];
-  const _hoisted_20 = { key: 0 };
-  const _hoisted_21 = { class: "captcha-settings-item" };
-  const _hoisted_22 = /* @__PURE__ */ vue.createElementVNode("label", null, "OpenAI API Key:", -1);
-  const _hoisted_23 = { class: "input-with-button" };
-  const _hoisted_24 = { key: 0 };
-  const _hoisted_25 = { key: 1 };
-  const _hoisted_26 = { key: 2 };
-  const _hoisted_27 = { key: 3 };
-  const _hoisted_28 = { class: "captcha-settings-item" };
-  const _hoisted_29 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
-  const _hoisted_30 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
-  const _hoisted_31 = { class: "captcha-settings-item" };
-  const _hoisted_32 = /* @__PURE__ */ vue.createElementVNode("label", null, "模型 (可选):", -1);
-  const _hoisted_33 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认模型", -1);
-  const _hoisted_34 = { class: "captcha-settings-item" };
-  const _hoisted_35 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义提示词 (可选):", -1);
-  const _hoisted_36 = { class: "textarea-with-button" };
-  const _hoisted_37 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认提示词", -1);
-  const _hoisted_38 = { key: 1 };
-  const _hoisted_39 = { class: "captcha-settings-item" };
-  const _hoisted_40 = /* @__PURE__ */ vue.createElementVNode("label", null, "Google Gemini API Key:", -1);
-  const _hoisted_41 = { class: "input-with-button" };
-  const _hoisted_42 = { key: 0 };
-  const _hoisted_43 = { key: 1 };
-  const _hoisted_44 = { key: 2 };
-  const _hoisted_45 = { key: 3 };
-  const _hoisted_46 = { class: "captcha-settings-item" };
-  const _hoisted_47 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
-  const _hoisted_48 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
-  const _hoisted_49 = { class: "captcha-settings-item" };
-  const _hoisted_50 = /* @__PURE__ */ vue.createElementVNode("label", null, "模型 (可选):", -1);
-  const _hoisted_51 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认模型", -1);
-  const _hoisted_52 = { class: "captcha-settings-item" };
-  const _hoisted_53 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义提示词 (可选):", -1);
-  const _hoisted_54 = { class: "textarea-with-button" };
-  const _hoisted_55 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认提示词", -1);
-  const _hoisted_56 = { key: 2 };
-  const _hoisted_57 = { class: "captcha-settings-item" };
-  const _hoisted_58 = /* @__PURE__ */ vue.createElementVNode("label", null, "阿里云通义千问 API Key:", -1);
-  const _hoisted_59 = { class: "input-with-button" };
-  const _hoisted_60 = { key: 0 };
-  const _hoisted_61 = { key: 1 };
-  const _hoisted_62 = { key: 2 };
-  const _hoisted_63 = { key: 3 };
-  const _hoisted_64 = { class: "captcha-settings-item" };
-  const _hoisted_65 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
-  const _hoisted_66 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
-  const _hoisted_67 = { class: "captcha-settings-item" };
-  const _hoisted_68 = /* @__PURE__ */ vue.createElementVNode("label", null, "模型 (可选):", -1);
-  const _hoisted_69 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认模型", -1);
-  const _hoisted_70 = { class: "captcha-settings-item" };
-  const _hoisted_71 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义提示词 (可选):", -1);
-  const _hoisted_72 = { class: "textarea-with-button" };
-  const _hoisted_73 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认提示词", -1);
-  const _hoisted_74 = { key: 3 };
-  const _hoisted_75 = { class: "captcha-settings-item" };
-  const _hoisted_76 = { key: 0 };
-  const _hoisted_77 = { key: 1 };
-  const _hoisted_78 = { key: 2 };
-  const _hoisted_79 = { key: 3 };
-  const _hoisted_80 = { class: "captcha-settings-item" };
-  const _hoisted_81 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
-  const _hoisted_82 = { class: "textarea-with-button" };
-  const _hoisted_83 = ["placeholder"];
-  const _hoisted_84 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
-  const _hoisted_85 = { class: "captcha-settings-item" };
-  const _hoisted_86 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 Request 请求模板:", -1);
-  const _hoisted_87 = { class: "textarea-with-button" };
-  const _hoisted_88 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认模板", -1);
-  const _hoisted_89 = {
+  const _hoisted_19 = { key: 0 };
+  const _hoisted_20 = { class: "captcha-settings-item" };
+  const _hoisted_21 = /* @__PURE__ */ vue.createElementVNode("label", null, "OpenAI API Key:", -1);
+  const _hoisted_22 = { class: "input-with-button" };
+  const _hoisted_23 = { key: 0 };
+  const _hoisted_24 = { key: 1 };
+  const _hoisted_25 = { key: 2 };
+  const _hoisted_26 = { key: 3 };
+  const _hoisted_27 = { class: "captcha-settings-item" };
+  const _hoisted_28 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
+  const _hoisted_29 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
+  const _hoisted_30 = { class: "captcha-settings-item" };
+  const _hoisted_31 = /* @__PURE__ */ vue.createElementVNode("label", null, "模型 (可选):", -1);
+  const _hoisted_32 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认模型", -1);
+  const _hoisted_33 = { class: "captcha-settings-item" };
+  const _hoisted_34 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义提示词 (可选):", -1);
+  const _hoisted_35 = { class: "textarea-with-button" };
+  const _hoisted_36 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认提示词", -1);
+  const _hoisted_37 = { key: 1 };
+  const _hoisted_38 = { class: "captcha-settings-item" };
+  const _hoisted_39 = /* @__PURE__ */ vue.createElementVNode("label", null, "Google Gemini API Key:", -1);
+  const _hoisted_40 = { class: "input-with-button" };
+  const _hoisted_41 = { key: 0 };
+  const _hoisted_42 = { key: 1 };
+  const _hoisted_43 = { key: 2 };
+  const _hoisted_44 = { key: 3 };
+  const _hoisted_45 = { class: "captcha-settings-item" };
+  const _hoisted_46 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
+  const _hoisted_47 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
+  const _hoisted_48 = { class: "captcha-settings-item" };
+  const _hoisted_49 = /* @__PURE__ */ vue.createElementVNode("label", null, "模型 (可选):", -1);
+  const _hoisted_50 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认模型", -1);
+  const _hoisted_51 = { class: "captcha-settings-item" };
+  const _hoisted_52 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义提示词 (可选):", -1);
+  const _hoisted_53 = { class: "textarea-with-button" };
+  const _hoisted_54 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认提示词", -1);
+  const _hoisted_55 = { key: 2 };
+  const _hoisted_56 = { class: "captcha-settings-item" };
+  const _hoisted_57 = /* @__PURE__ */ vue.createElementVNode("label", null, "阿里云通义千问 API Key:", -1);
+  const _hoisted_58 = { class: "input-with-button" };
+  const _hoisted_59 = { key: 0 };
+  const _hoisted_60 = { key: 1 };
+  const _hoisted_61 = { key: 2 };
+  const _hoisted_62 = { key: 3 };
+  const _hoisted_63 = { class: "captcha-settings-item" };
+  const _hoisted_64 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
+  const _hoisted_65 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
+  const _hoisted_66 = { class: "captcha-settings-item" };
+  const _hoisted_67 = /* @__PURE__ */ vue.createElementVNode("label", null, "模型 (可选):", -1);
+  const _hoisted_68 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认模型", -1);
+  const _hoisted_69 = { class: "captcha-settings-item" };
+  const _hoisted_70 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义提示词 (可选):", -1);
+  const _hoisted_71 = { class: "textarea-with-button" };
+  const _hoisted_72 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认提示词", -1);
+  const _hoisted_73 = { key: 3 };
+  const _hoisted_74 = { class: "captcha-settings-item" };
+  const _hoisted_75 = { key: 0 };
+  const _hoisted_76 = { key: 1 };
+  const _hoisted_77 = { key: 2 };
+  const _hoisted_78 = { key: 3 };
+  const _hoisted_79 = { class: "captcha-settings-item" };
+  const _hoisted_80 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 API 地址 (可选):", -1);
+  const _hoisted_81 = { class: "textarea-with-button" };
+  const _hoisted_82 = ["placeholder"];
+  const _hoisted_83 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认地址", -1);
+  const _hoisted_84 = { class: "captcha-settings-item" };
+  const _hoisted_85 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义 Request 请求模板:", -1);
+  const _hoisted_86 = { class: "textarea-with-button" };
+  const _hoisted_87 = /* @__PURE__ */ vue.createElementVNode("small", null, "留空使用默认模板", -1);
+  const _hoisted_88 = {
     key: 1,
     class: "settings-content-tab"
   };
-  const _hoisted_90 = { class: "settings-card" };
-  const _hoisted_91 = /* @__PURE__ */ vue.createElementVNode("div", { class: "settings-card-title" }, [
+  const _hoisted_89 = { class: "settings-card" };
+  const _hoisted_90 = /* @__PURE__ */ vue.createElementVNode("div", { class: "settings-card-title" }, [
     /* @__PURE__ */ vue.createElementVNode("span", null, "功能设置")
   ], -1);
-  const _hoisted_92 = { class: "captcha-settings-item" };
-  const _hoisted_93 = { style: { "display": "flex", "align-items": "center" } };
-  const _hoisted_94 = /* @__PURE__ */ vue.createElementVNode("label", {
+  const _hoisted_91 = { class: "captcha-settings-item" };
+  const _hoisted_92 = { style: { "display": "flex", "align-items": "center" } };
+  const _hoisted_93 = /* @__PURE__ */ vue.createElementVNode("label", {
     for: "autoRecognize",
     style: { "margin-bottom": "0" }
   }, "验证码图片变化时自动识别", -1);
-  const _hoisted_95 = { class: "captcha-settings-item" };
-  const _hoisted_96 = { style: { "display": "flex", "align-items": "center" } };
-  const _hoisted_97 = /* @__PURE__ */ vue.createElementVNode("label", {
+  const _hoisted_94 = { class: "captcha-settings-item" };
+  const _hoisted_95 = { style: { "display": "flex", "align-items": "center" } };
+  const _hoisted_96 = /* @__PURE__ */ vue.createElementVNode("label", {
     for: "copyToClipboard",
     style: { "margin-bottom": "0" }
   }, "自动复制到剪贴板", -1);
-  const _hoisted_98 = { class: "captcha-settings-item" };
-  const _hoisted_99 = { style: { "display": "flex", "align-items": "center" } };
-  const _hoisted_100 = /* @__PURE__ */ vue.createElementVNode("label", {
+  const _hoisted_97 = { class: "captcha-settings-item" };
+  const _hoisted_98 = { style: { "display": "flex", "align-items": "center" } };
+  const _hoisted_99 = /* @__PURE__ */ vue.createElementVNode("label", {
     for: "showNotification",
     style: { "margin-bottom": "0" }
   }, "显示右上角通知提示", -1);
-  const _hoisted_101 = {
+  const _hoisted_100 = { class: "captcha-settings-item" };
+  const _hoisted_101 = { style: { "display": "flex", "align-items": "center" } };
+  const _hoisted_102 = /* @__PURE__ */ vue.createElementVNode("label", {
+    for: "autoFetchCloudRules",
+    style: { "margin-bottom": "0" }
+  }, "每日首次运行时自动获取云端规则", -1);
+  const _hoisted_103 = {
     key: 2,
     class: "settings-content-tab"
   };
-  const _hoisted_102 = { class: "settings-card" };
-  const _hoisted_103 = /* @__PURE__ */ vue.createElementVNode("div", { class: "settings-card-title" }, [
+  const _hoisted_104 = { class: "settings-card" };
+  const _hoisted_105 = /* @__PURE__ */ vue.createElementVNode("div", { class: "settings-card-title" }, [
     /* @__PURE__ */ vue.createElementVNode("span", null, "禁用域名列表")
   ], -1);
-  const _hoisted_104 = { class: "captcha-settings-item" };
-  const _hoisted_105 = /* @__PURE__ */ vue.createElementVNode("small", null, [
+  const _hoisted_106 = { class: "captcha-settings-item" };
+  const _hoisted_107 = /* @__PURE__ */ vue.createElementVNode("small", null, [
     /* @__PURE__ */ vue.createTextVNode(" 在这些域名下将不启用验证码识别功能 "),
     /* @__PURE__ */ vue.createElementVNode("br"),
     /* @__PURE__ */ vue.createTextVNode(" 多个配置请使用换行显示 ")
   ], -1);
-  const _hoisted_106 = {
+  const _hoisted_108 = {
     key: 3,
     class: "settings-content-tab"
   };
-  const _hoisted_107 = { class: "settings-card" };
-  const _hoisted_108 = /* @__PURE__ */ vue.createElementVNode("div", { class: "settings-card-title" }, [
+  const _hoisted_109 = { class: "settings-card" };
+  const _hoisted_110 = /* @__PURE__ */ vue.createElementVNode("div", { class: "settings-card-title" }, [
     /* @__PURE__ */ vue.createElementVNode("span", null, [
       /* @__PURE__ */ vue.createTextVNode("高级设置 "),
       /* @__PURE__ */ vue.createElementVNode("a", {
@@ -4852,28 +4860,28 @@
       }, "教程")
     ])
   ], -1);
-  const _hoisted_109 = /* @__PURE__ */ vue.createElementVNode("div", { class: "advanced-settings-warning" }, " ⚠️ 警告：如果您不了解CSS选择器，请不要修改这些设置，可能导致识别功能失效 ", -1);
-  const _hoisted_110 = { class: "captcha-settings-item" };
-  const _hoisted_111 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义验证码图片选择器：", -1);
-  const _hoisted_112 = { class: "custom-selectors" };
-  const _hoisted_113 = ["onUpdate:modelValue"];
-  const _hoisted_114 = ["onClick"];
-  const _hoisted_115 = { class: "captcha-settings-item" };
-  const _hoisted_116 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义输入框选择器：", -1);
-  const _hoisted_117 = { class: "custom-selectors" };
-  const _hoisted_118 = ["onUpdate:modelValue"];
-  const _hoisted_119 = ["onClick"];
-  const _hoisted_120 = { class: "captcha-settings-item" };
-  const _hoisted_121 = /* @__PURE__ */ vue.createElementVNode("label", null, "验证码规则管理：", -1);
-  const _hoisted_122 = { class: "rules-management" };
-  const _hoisted_123 = { class: "rules-url-input" };
-  const _hoisted_124 = /* @__PURE__ */ vue.createElementVNode("small", null, "规则文件URL，留空则使用默认URL：https://ghfast.top/https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json", -1);
-  const _hoisted_125 = { key: 0 };
-  const _hoisted_126 = { key: 1 };
-  const _hoisted_127 = { key: 2 };
-  const _hoisted_128 = { key: 3 };
-  const _hoisted_129 = /* @__PURE__ */ vue.createElementVNode("small", null, "从远程加载最新的验证码识别规则", -1);
-  const _hoisted_130 = { class: "captcha-settings-buttons" };
+  const _hoisted_111 = /* @__PURE__ */ vue.createElementVNode("div", { class: "advanced-settings-warning" }, " ⚠️ 警告：如果您不了解 CSS 选择器，请不要修改这些设置，可能导致识别功能失效 ", -1);
+  const _hoisted_112 = { class: "captcha-settings-item" };
+  const _hoisted_113 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义验证码图片选择器：", -1);
+  const _hoisted_114 = { class: "custom-selectors" };
+  const _hoisted_115 = ["onUpdate:modelValue"];
+  const _hoisted_116 = ["onClick"];
+  const _hoisted_117 = { class: "captcha-settings-item" };
+  const _hoisted_118 = /* @__PURE__ */ vue.createElementVNode("label", null, "自定义输入框选择器：", -1);
+  const _hoisted_119 = { class: "custom-selectors" };
+  const _hoisted_120 = ["onUpdate:modelValue"];
+  const _hoisted_121 = ["onClick"];
+  const _hoisted_122 = { class: "captcha-settings-item" };
+  const _hoisted_123 = /* @__PURE__ */ vue.createElementVNode("label", null, "验证码规则管理：", -1);
+  const _hoisted_124 = { class: "rules-management" };
+  const _hoisted_125 = { class: "rules-url-input" };
+  const _hoisted_126 = /* @__PURE__ */ vue.createElementVNode("small", null, "规则文件 URL，留空则使用默认 URL：https://ghfast.top/https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json", -1);
+  const _hoisted_127 = { key: 0 };
+  const _hoisted_128 = { key: 1 };
+  const _hoisted_129 = { key: 2 };
+  const _hoisted_130 = { key: 3 };
+  const _hoisted_131 = /* @__PURE__ */ vue.createElementVNode("small", null, "从远程加载最新的验证码识别规则", -1);
+  const _hoisted_132 = { class: "captcha-settings-buttons" };
   function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     return vue.openBlock(), vue.createElementBlock("div", _hoisted_1, [
       $data.process.env.NODE_ENV === "development" && !$data.showSettings ? (vue.openBlock(), vue.createElementBlock("div", {
@@ -4881,52 +4889,62 @@
         class: "dev-settings-button",
         onClick: _cache[0] || (_cache[0] = (...args) => $options.openSettings && $options.openSettings(...args))
       }, _hoisted_3)) : vue.createCommentVNode("", true),
-      $data.showSettings ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_4, [
-        vue.createElementVNode("div", _hoisted_5, [
+      $data.showSettings ? (vue.openBlock(), vue.createElementBlock("div", {
+        key: 1,
+        class: "captcha-settings-overlay",
+        onClick: _cache[1] || (_cache[1] = (...args) => $options.closeSettings && $options.closeSettings(...args))
+      })) : vue.createCommentVNode("", true),
+      $data.showSettings ? (vue.openBlock(), vue.createElementBlock("div", {
+        key: 2,
+        class: vue.normalizeClass(["captcha-settings-modal", { show: $data.showSettings }]),
+        onClick: _cache[42] || (_cache[42] = vue.withModifiers(() => {
+        }, ["stop"]))
+      }, [
+        vue.createElementVNode("div", _hoisted_4, [
           vue.createElementVNode("h3", null, [
             vue.createTextVNode(" 验证码识别设置 "),
             vue.createElementVNode("span", null, vue.toDisplayString($data.packageJson.version), 1)
           ]),
-          vue.createElementVNode("div", _hoisted_6, [
+          vue.createElementVNode("div", _hoisted_5, [
             vue.createElementVNode("div", {
               class: vue.normalizeClass(["settings-nav-item", { active: $data.activeSettingTab === "ai" }]),
-              onClick: _cache[1] || (_cache[1] = ($event) => $data.activeSettingTab = "ai")
-            }, " AI服务商 ", 2),
+              onClick: _cache[2] || (_cache[2] = ($event) => $data.activeSettingTab = "ai")
+            }, " AI 服务商 ", 2),
             vue.createElementVNode("div", {
               class: vue.normalizeClass(["settings-nav-item", { active: $data.activeSettingTab === "function" }]),
-              onClick: _cache[2] || (_cache[2] = ($event) => $data.activeSettingTab = "function")
+              onClick: _cache[3] || (_cache[3] = ($event) => $data.activeSettingTab = "function")
             }, " 功能设置 ", 2),
             vue.createElementVNode("div", {
               class: vue.normalizeClass(["settings-nav-item", { active: $data.activeSettingTab === "domain" }]),
-              onClick: _cache[3] || (_cache[3] = ($event) => $data.activeSettingTab = "domain")
+              onClick: _cache[4] || (_cache[4] = ($event) => $data.activeSettingTab = "domain")
             }, " 禁用域名 ", 2),
             vue.createElementVNode("div", {
               class: vue.normalizeClass(["settings-nav-item", { active: $data.activeSettingTab === "advanced" }]),
-              onClick: _cache[4] || (_cache[4] = ($event) => $data.activeSettingTab = "advanced")
+              onClick: _cache[5] || (_cache[5] = ($event) => $data.activeSettingTab = "advanced")
             }, " 高级设置 ", 2)
           ]),
-          vue.createElementVNode("div", _hoisted_7, [
-            $data.activeSettingTab === "ai" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_8, [
-              vue.createElementVNode("div", _hoisted_9, [
-                vue.createElementVNode("div", _hoisted_10, [
-                  _hoisted_11,
-                  vue.createElementVNode("span", _hoisted_12, vue.toDisplayString($options.getApiTypeName($data.settings.apiType)), 1)
+          vue.createElementVNode("div", _hoisted_6, [
+            $data.activeSettingTab === "ai" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_7, [
+              vue.createElementVNode("div", _hoisted_8, [
+                vue.createElementVNode("div", _hoisted_9, [
+                  _hoisted_10,
+                  vue.createElementVNode("span", _hoisted_11, vue.toDisplayString($options.getApiTypeName($data.settings.apiType)), 1)
                 ]),
-                vue.createElementVNode("div", _hoisted_13, [
-                  _hoisted_14,
+                vue.createElementVNode("div", _hoisted_12, [
+                  _hoisted_13,
                   vue.withDirectives(vue.createElementVNode("select", {
-                    "onUpdate:modelValue": _cache[5] || (_cache[5] = ($event) => $data.settings.apiType = $event)
-                  }, _hoisted_19, 512), [
+                    "onUpdate:modelValue": _cache[6] || (_cache[6] = ($event) => $data.settings.apiType = $event)
+                  }, _hoisted_18, 512), [
                     [vue.vModelSelect, $data.settings.apiType]
                   ])
                 ]),
-                $data.settings.apiType === "openai" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_20, [
-                  vue.createElementVNode("div", _hoisted_21, [
-                    _hoisted_22,
-                    vue.createElementVNode("div", _hoisted_23, [
+                $data.settings.apiType === "openai" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_19, [
+                  vue.createElementVNode("div", _hoisted_20, [
+                    _hoisted_21,
+                    vue.createElementVNode("div", _hoisted_22, [
                       vue.withDirectives(vue.createElementVNode("input", {
                         type: "text",
-                        "onUpdate:modelValue": _cache[6] || (_cache[6] = ($event) => $data.settings.openaiKey = $event),
+                        "onUpdate:modelValue": _cache[7] || (_cache[7] = ($event) => $data.settings.openaiKey = $event),
                         placeholder: "sk-..."
                       }, null, 512), [
                         [vue.vModelText, $data.settings.openaiKey]
@@ -4938,39 +4956,39 @@
                           "test-success": $data.apiTestStatus.openai === "success",
                           "test-error": $data.apiTestStatus.openai === "error"
                         }]),
-                        onClick: _cache[7] || (_cache[7] = ($event) => $options.testApiConnection("openai"))
+                        onClick: _cache[8] || (_cache[8] = ($event) => $options.testApiConnection("openai"))
                       }, [
-                        $data.apiTestStatus.openai === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_24, "测试连接")) : $data.apiTestStatus.openai === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_25)) : $data.apiTestStatus.openai === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_26, "成功")) : $data.apiTestStatus.openai === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_27, "失败")) : vue.createCommentVNode("", true)
+                        $data.apiTestStatus.openai === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_23, "测试连接")) : $data.apiTestStatus.openai === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_24)) : $data.apiTestStatus.openai === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_25, "成功")) : $data.apiTestStatus.openai === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_26, "失败")) : vue.createCommentVNode("", true)
                       ], 2)
                     ])
                   ]),
-                  vue.createElementVNode("div", _hoisted_28, [
-                    _hoisted_29,
+                  vue.createElementVNode("div", _hoisted_27, [
+                    _hoisted_28,
                     vue.withDirectives(vue.createElementVNode("input", {
                       type: "text",
-                      "onUpdate:modelValue": _cache[8] || (_cache[8] = ($event) => $data.settings.openaiApiUrl = $event),
+                      "onUpdate:modelValue": _cache[9] || (_cache[9] = ($event) => $data.settings.openaiApiUrl = $event),
                       placeholder: "https://api.openai.com/v1/chat/completions"
                     }, null, 512), [
                       [vue.vModelText, $data.settings.openaiApiUrl]
                     ]),
-                    _hoisted_30
+                    _hoisted_29
                   ]),
-                  vue.createElementVNode("div", _hoisted_31, [
-                    _hoisted_32,
+                  vue.createElementVNode("div", _hoisted_30, [
+                    _hoisted_31,
                     vue.withDirectives(vue.createElementVNode("input", {
                       type: "text",
-                      "onUpdate:modelValue": _cache[9] || (_cache[9] = ($event) => $data.settings.openaiModel = $event),
+                      "onUpdate:modelValue": _cache[10] || (_cache[10] = ($event) => $data.settings.openaiModel = $event),
                       placeholder: "gpt-4.1-mini"
                     }, null, 512), [
                       [vue.vModelText, $data.settings.openaiModel]
                     ]),
-                    _hoisted_33
+                    _hoisted_32
                   ]),
-                  vue.createElementVNode("div", _hoisted_34, [
-                    _hoisted_35,
-                    vue.createElementVNode("div", _hoisted_36, [
+                  vue.createElementVNode("div", _hoisted_33, [
+                    _hoisted_34,
+                    vue.createElementVNode("div", _hoisted_35, [
                       vue.withDirectives(vue.createElementVNode("textarea", {
-                        "onUpdate:modelValue": _cache[10] || (_cache[10] = ($event) => $data.settings.openaiPrompt = $event),
+                        "onUpdate:modelValue": _cache[11] || (_cache[11] = ($event) => $data.settings.openaiPrompt = $event),
                         placeholder: "输入自定义提示词，或点击右侧按钮使用默认提示词",
                         rows: "3"
                       }, null, 512), [
@@ -4979,19 +4997,19 @@
                       vue.createElementVNode("button", {
                         type: "button",
                         class: "use-default-prompt",
-                        onClick: _cache[11] || (_cache[11] = ($event) => $data.settings.openaiPrompt = $data.DEFAULT_PROMPT)
+                        onClick: _cache[12] || (_cache[12] = ($event) => $data.settings.openaiPrompt = $data.DEFAULT_PROMPT)
                       }, " 使用默认 ")
                     ]),
-                    _hoisted_37
+                    _hoisted_36
                   ])
                 ])) : vue.createCommentVNode("", true),
-                $data.settings.apiType === "gemini" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_38, [
-                  vue.createElementVNode("div", _hoisted_39, [
-                    _hoisted_40,
-                    vue.createElementVNode("div", _hoisted_41, [
+                $data.settings.apiType === "gemini" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_37, [
+                  vue.createElementVNode("div", _hoisted_38, [
+                    _hoisted_39,
+                    vue.createElementVNode("div", _hoisted_40, [
                       vue.withDirectives(vue.createElementVNode("input", {
                         type: "text",
-                        "onUpdate:modelValue": _cache[12] || (_cache[12] = ($event) => $data.settings.geminiKey = $event),
+                        "onUpdate:modelValue": _cache[13] || (_cache[13] = ($event) => $data.settings.geminiKey = $event),
                         placeholder: "输入Gemini API Key"
                       }, null, 512), [
                         [vue.vModelText, $data.settings.geminiKey]
@@ -5003,39 +5021,39 @@
                           "test-success": $data.apiTestStatus.gemini === "success",
                           "test-error": $data.apiTestStatus.gemini === "error"
                         }]),
-                        onClick: _cache[13] || (_cache[13] = ($event) => $options.testApiConnection("gemini"))
+                        onClick: _cache[14] || (_cache[14] = ($event) => $options.testApiConnection("gemini"))
                       }, [
-                        $data.apiTestStatus.gemini === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_42, "测试连接")) : $data.apiTestStatus.gemini === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_43)) : $data.apiTestStatus.gemini === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_44, "成功")) : $data.apiTestStatus.gemini === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_45, "失败")) : vue.createCommentVNode("", true)
+                        $data.apiTestStatus.gemini === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_41, "测试连接")) : $data.apiTestStatus.gemini === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_42)) : $data.apiTestStatus.gemini === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_43, "成功")) : $data.apiTestStatus.gemini === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_44, "失败")) : vue.createCommentVNode("", true)
                       ], 2)
                     ])
                   ]),
-                  vue.createElementVNode("div", _hoisted_46, [
-                    _hoisted_47,
+                  vue.createElementVNode("div", _hoisted_45, [
+                    _hoisted_46,
                     vue.withDirectives(vue.createElementVNode("input", {
                       type: "text",
-                      "onUpdate:modelValue": _cache[14] || (_cache[14] = ($event) => $data.settings.geminiApiUrl = $event),
+                      "onUpdate:modelValue": _cache[15] || (_cache[15] = ($event) => $data.settings.geminiApiUrl = $event),
                       placeholder: "https://generativelanguage.googleapis.com/v1beta/models"
                     }, null, 512), [
                       [vue.vModelText, $data.settings.geminiApiUrl]
                     ]),
-                    _hoisted_48
+                    _hoisted_47
                   ]),
-                  vue.createElementVNode("div", _hoisted_49, [
-                    _hoisted_50,
+                  vue.createElementVNode("div", _hoisted_48, [
+                    _hoisted_49,
                     vue.withDirectives(vue.createElementVNode("input", {
                       type: "text",
-                      "onUpdate:modelValue": _cache[15] || (_cache[15] = ($event) => $data.settings.geminiModel = $event),
+                      "onUpdate:modelValue": _cache[16] || (_cache[16] = ($event) => $data.settings.geminiModel = $event),
                       placeholder: "gemini-2.5-flash-lite-preview-06-17"
                     }, null, 512), [
                       [vue.vModelText, $data.settings.geminiModel]
                     ]),
-                    _hoisted_51
+                    _hoisted_50
                   ]),
-                  vue.createElementVNode("div", _hoisted_52, [
-                    _hoisted_53,
-                    vue.createElementVNode("div", _hoisted_54, [
+                  vue.createElementVNode("div", _hoisted_51, [
+                    _hoisted_52,
+                    vue.createElementVNode("div", _hoisted_53, [
                       vue.withDirectives(vue.createElementVNode("textarea", {
-                        "onUpdate:modelValue": _cache[16] || (_cache[16] = ($event) => $data.settings.geminiPrompt = $event),
+                        "onUpdate:modelValue": _cache[17] || (_cache[17] = ($event) => $data.settings.geminiPrompt = $event),
                         placeholder: "输入自定义提示词，或点击右侧按钮使用默认提示词",
                         rows: "3"
                       }, null, 512), [
@@ -5044,19 +5062,19 @@
                       vue.createElementVNode("button", {
                         type: "button",
                         class: "use-default-prompt",
-                        onClick: _cache[17] || (_cache[17] = ($event) => $data.settings.geminiPrompt = $data.DEFAULT_PROMPT)
+                        onClick: _cache[18] || (_cache[18] = ($event) => $data.settings.geminiPrompt = $data.DEFAULT_PROMPT)
                       }, " 使用默认 ")
                     ]),
-                    _hoisted_55
+                    _hoisted_54
                   ])
                 ])) : vue.createCommentVNode("", true),
-                $data.settings.apiType === "qwen" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_56, [
-                  vue.createElementVNode("div", _hoisted_57, [
-                    _hoisted_58,
-                    vue.createElementVNode("div", _hoisted_59, [
+                $data.settings.apiType === "qwen" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_55, [
+                  vue.createElementVNode("div", _hoisted_56, [
+                    _hoisted_57,
+                    vue.createElementVNode("div", _hoisted_58, [
                       vue.withDirectives(vue.createElementVNode("input", {
                         type: "text",
-                        "onUpdate:modelValue": _cache[18] || (_cache[18] = ($event) => $data.settings.qwenKey = $event),
+                        "onUpdate:modelValue": _cache[19] || (_cache[19] = ($event) => $data.settings.qwenKey = $event),
                         placeholder: "API Key"
                       }, null, 512), [
                         [vue.vModelText, $data.settings.qwenKey]
@@ -5068,39 +5086,39 @@
                           "test-success": $data.apiTestStatus.qwen === "success",
                           "test-error": $data.apiTestStatus.qwen === "error"
                         }]),
-                        onClick: _cache[19] || (_cache[19] = ($event) => $options.testApiConnection("qwen"))
+                        onClick: _cache[20] || (_cache[20] = ($event) => $options.testApiConnection("qwen"))
                       }, [
-                        $data.apiTestStatus.qwen === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_60, "测试连接")) : $data.apiTestStatus.qwen === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_61)) : $data.apiTestStatus.qwen === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_62, "成功")) : $data.apiTestStatus.qwen === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_63, "失败")) : vue.createCommentVNode("", true)
+                        $data.apiTestStatus.qwen === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_59, "测试连接")) : $data.apiTestStatus.qwen === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_60)) : $data.apiTestStatus.qwen === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_61, "成功")) : $data.apiTestStatus.qwen === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_62, "失败")) : vue.createCommentVNode("", true)
                       ], 2)
                     ])
                   ]),
-                  vue.createElementVNode("div", _hoisted_64, [
-                    _hoisted_65,
+                  vue.createElementVNode("div", _hoisted_63, [
+                    _hoisted_64,
                     vue.withDirectives(vue.createElementVNode("input", {
                       type: "text",
-                      "onUpdate:modelValue": _cache[20] || (_cache[20] = ($event) => $data.settings.qwenApiUrl = $event),
+                      "onUpdate:modelValue": _cache[21] || (_cache[21] = ($event) => $data.settings.qwenApiUrl = $event),
                       placeholder: "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
                     }, null, 512), [
                       [vue.vModelText, $data.settings.qwenApiUrl]
                     ]),
-                    _hoisted_66
+                    _hoisted_65
                   ]),
-                  vue.createElementVNode("div", _hoisted_67, [
-                    _hoisted_68,
+                  vue.createElementVNode("div", _hoisted_66, [
+                    _hoisted_67,
                     vue.withDirectives(vue.createElementVNode("input", {
                       type: "text",
-                      "onUpdate:modelValue": _cache[21] || (_cache[21] = ($event) => $data.settings.qwenModel = $event),
+                      "onUpdate:modelValue": _cache[22] || (_cache[22] = ($event) => $data.settings.qwenModel = $event),
                       placeholder: "qwen-vl-max-2025-04-02"
                     }, null, 512), [
                       [vue.vModelText, $data.settings.qwenModel]
                     ]),
-                    _hoisted_69
+                    _hoisted_68
                   ]),
-                  vue.createElementVNode("div", _hoisted_70, [
-                    _hoisted_71,
-                    vue.createElementVNode("div", _hoisted_72, [
+                  vue.createElementVNode("div", _hoisted_69, [
+                    _hoisted_70,
+                    vue.createElementVNode("div", _hoisted_71, [
                       vue.withDirectives(vue.createElementVNode("textarea", {
-                        "onUpdate:modelValue": _cache[22] || (_cache[22] = ($event) => $data.settings.qwenPrompt = $event),
+                        "onUpdate:modelValue": _cache[23] || (_cache[23] = ($event) => $data.settings.qwenPrompt = $event),
                         placeholder: "输入自定义提示词，或点击右侧按钮使用默认提示词",
                         rows: "3"
                       }, null, 512), [
@@ -5109,14 +5127,14 @@
                       vue.createElementVNode("button", {
                         type: "button",
                         class: "use-default-prompt",
-                        onClick: _cache[23] || (_cache[23] = ($event) => $data.settings.qwenPrompt = $data.DEFAULT_PROMPT)
+                        onClick: _cache[24] || (_cache[24] = ($event) => $data.settings.qwenPrompt = $data.DEFAULT_PROMPT)
                       }, " 使用默认 ")
                     ]),
-                    _hoisted_73
+                    _hoisted_72
                   ])
                 ])) : vue.createCommentVNode("", true),
-                $data.settings.apiType === "ddddocr" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_74, [
-                  vue.createElementVNode("div", _hoisted_75, [
+                $data.settings.apiType === "ddddocr" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_73, [
+                  vue.createElementVNode("div", _hoisted_74, [
                     vue.createElementVNode("button", {
                       class: vue.normalizeClass([{
                         "test-loading": $data.apiTestStatus.ddddocr === "loading",
@@ -5124,117 +5142,130 @@
                         "test-error": $data.apiTestStatus.ddddocr === "error"
                       }, "test-api-button"]),
                       type: "button",
-                      onClick: _cache[24] || (_cache[24] = ($event) => $options.testApiConnection("ddddocr"))
+                      onClick: _cache[25] || (_cache[25] = ($event) => $options.testApiConnection("ddddocr"))
                     }, [
-                      $data.apiTestStatus.ddddocr === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_76, "测试连接")) : $data.apiTestStatus.ddddocr === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_77)) : $data.apiTestStatus.ddddocr === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_78, "成功")) : $data.apiTestStatus.ddddocr === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_79, "失败")) : vue.createCommentVNode("", true)
+                      $data.apiTestStatus.ddddocr === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_75, "测试连接")) : $data.apiTestStatus.ddddocr === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_76)) : $data.apiTestStatus.ddddocr === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_77, "成功")) : $data.apiTestStatus.ddddocr === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_78, "失败")) : vue.createCommentVNode("", true)
                     ], 2)
                   ]),
-                  vue.createElementVNode("div", _hoisted_80, [
-                    _hoisted_81,
-                    vue.createElementVNode("div", _hoisted_82, [
+                  vue.createElementVNode("div", _hoisted_79, [
+                    _hoisted_80,
+                    vue.createElementVNode("div", _hoisted_81, [
                       vue.withDirectives(vue.createElementVNode("input", {
-                        "onUpdate:modelValue": _cache[25] || (_cache[25] = ($event) => $data.settings.ddddocrApiUrl = $event),
+                        "onUpdate:modelValue": _cache[26] || (_cache[26] = ($event) => $data.settings.ddddocrApiUrl = $event),
                         placeholder: $data.ddddocrApiDefaultUrl,
                         type: "text"
-                      }, null, 8, _hoisted_83), [
+                      }, null, 8, _hoisted_82), [
                         [vue.vModelText, $data.settings.ddddocrApiUrl]
                       ]),
                       vue.createElementVNode("button", {
                         class: "use-default-prompt",
                         type: "button",
-                        onClick: _cache[26] || (_cache[26] = ($event) => $data.settings.ddddocrApiUrl = $data.ddddocrApiDefaultUrl)
+                        onClick: _cache[27] || (_cache[27] = ($event) => $data.settings.ddddocrApiUrl = $data.ddddocrApiDefaultUrl)
                       }, " 默认 ")
                     ]),
-                    _hoisted_84
+                    _hoisted_83
                   ]),
-                  vue.createElementVNode("div", _hoisted_85, [
-                    _hoisted_86,
-                    vue.createElementVNode("div", _hoisted_87, [
+                  vue.createElementVNode("div", _hoisted_84, [
+                    _hoisted_85,
+                    vue.createElementVNode("div", _hoisted_86, [
                       vue.withDirectives(vue.createElementVNode("textarea", {
                         ref: "jsontextareaRef",
-                        "onUpdate:modelValue": _cache[27] || (_cache[27] = ($event) => $data.settings.ddddocrApiTemplate = $event),
-                        onInput: _cache[28] || (_cache[28] = (...args) => $options.autoResize && $options.autoResize(...args))
+                        "onUpdate:modelValue": _cache[28] || (_cache[28] = ($event) => $data.settings.ddddocrApiTemplate = $event),
+                        onInput: _cache[29] || (_cache[29] = (...args) => $options.autoResize && $options.autoResize(...args))
                       }, null, 544), [
                         [vue.vModelText, $data.settings.ddddocrApiTemplate]
                       ]),
                       vue.createElementVNode("button", {
                         class: "use-default-prompt",
                         type: "button",
-                        onClick: _cache[29] || (_cache[29] = ($event) => $data.settings.ddddocrApiTemplate = $data.ddddocrApiDefaultTemplate)
+                        onClick: _cache[30] || (_cache[30] = ($event) => $data.settings.ddddocrApiTemplate = $data.ddddocrApiDefaultTemplate)
                       }, " 使用默认 ")
                     ]),
-                    _hoisted_88
+                    _hoisted_87
                   ])
                 ])) : vue.createCommentVNode("", true)
               ])
             ])) : vue.createCommentVNode("", true),
-            $data.activeSettingTab === "function" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_89, [
-              vue.createElementVNode("div", _hoisted_90, [
-                _hoisted_91,
-                vue.createElementVNode("div", _hoisted_92, [
-                  vue.createElementVNode("div", _hoisted_93, [
+            $data.activeSettingTab === "function" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_88, [
+              vue.createElementVNode("div", _hoisted_89, [
+                _hoisted_90,
+                vue.createElementVNode("div", _hoisted_91, [
+                  vue.createElementVNode("div", _hoisted_92, [
                     vue.withDirectives(vue.createElementVNode("input", {
                       type: "checkbox",
-                      "onUpdate:modelValue": _cache[30] || (_cache[30] = ($event) => $data.settings.autoRecognize = $event),
+                      "onUpdate:modelValue": _cache[31] || (_cache[31] = ($event) => $data.settings.autoRecognize = $event),
                       id: "autoRecognize",
                       style: { "width": "auto", "margin-right": "8px !important" }
                     }, null, 512), [
                       [vue.vModelCheckbox, $data.settings.autoRecognize]
                     ]),
-                    _hoisted_94
+                    _hoisted_93
                   ])
                 ]),
-                vue.createElementVNode("div", _hoisted_95, [
-                  vue.createElementVNode("div", _hoisted_96, [
+                vue.createElementVNode("div", _hoisted_94, [
+                  vue.createElementVNode("div", _hoisted_95, [
                     vue.withDirectives(vue.createElementVNode("input", {
                       type: "checkbox",
-                      "onUpdate:modelValue": _cache[31] || (_cache[31] = ($event) => $data.settings.copyToClipboard = $event),
+                      "onUpdate:modelValue": _cache[32] || (_cache[32] = ($event) => $data.settings.copyToClipboard = $event),
                       id: "copyToClipboard",
                       style: { "width": "auto", "margin-right": "8px !important" }
                     }, null, 512), [
                       [vue.vModelCheckbox, $data.settings.copyToClipboard]
                     ]),
-                    _hoisted_97
+                    _hoisted_96
                   ])
                 ]),
-                vue.createElementVNode("div", _hoisted_98, [
-                  vue.createElementVNode("div", _hoisted_99, [
+                vue.createElementVNode("div", _hoisted_97, [
+                  vue.createElementVNode("div", _hoisted_98, [
                     vue.withDirectives(vue.createElementVNode("input", {
                       type: "checkbox",
-                      "onUpdate:modelValue": _cache[32] || (_cache[32] = ($event) => $data.settings.showNotification = $event),
+                      "onUpdate:modelValue": _cache[33] || (_cache[33] = ($event) => $data.settings.showNotification = $event),
                       id: "showNotification",
                       style: { "width": "auto", "margin-right": "8px !important" }
                     }, null, 512), [
                       [vue.vModelCheckbox, $data.settings.showNotification]
                     ]),
-                    _hoisted_100
+                    _hoisted_99
+                  ])
+                ]),
+                vue.createElementVNode("div", _hoisted_100, [
+                  vue.createElementVNode("div", _hoisted_101, [
+                    vue.withDirectives(vue.createElementVNode("input", {
+                      type: "checkbox",
+                      "onUpdate:modelValue": _cache[34] || (_cache[34] = ($event) => $data.settings.autoFetchCloudRules = $event),
+                      id: "autoFetchCloudRules",
+                      style: { "width": "auto", "margin-right": "8px !important" }
+                    }, null, 512), [
+                      [vue.vModelCheckbox, $data.settings.autoFetchCloudRules]
+                    ]),
+                    _hoisted_102
                   ])
                 ])
               ])
             ])) : vue.createCommentVNode("", true),
-            $data.activeSettingTab === "domain" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_101, [
-              vue.createElementVNode("div", _hoisted_102, [
-                _hoisted_103,
-                vue.createElementVNode("div", _hoisted_104, [
+            $data.activeSettingTab === "domain" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_103, [
+              vue.createElementVNode("div", _hoisted_104, [
+                _hoisted_105,
+                vue.createElementVNode("div", _hoisted_106, [
                   vue.withDirectives(vue.createElementVNode("textarea", {
-                    "onUpdate:modelValue": _cache[33] || (_cache[33] = ($event) => $data.settings.disabledDomains = $event),
+                    "onUpdate:modelValue": _cache[35] || (_cache[35] = ($event) => $data.settings.disabledDomains = $event),
                     placeholder: "每行一个域名，支持正则和通配符，例如：\nexample.com\n*.example.org\nexample.*.com\n/^(www\\.)?example\\.com$/",
                     rows: "6",
                     class: "domain-textarea"
                   }, null, 512), [
                     [vue.vModelText, $data.settings.disabledDomains]
                   ]),
-                  _hoisted_105
+                  _hoisted_107
                 ])
               ])
             ])) : vue.createCommentVNode("", true),
-            $data.activeSettingTab === "advanced" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_106, [
-              vue.createElementVNode("div", _hoisted_107, [
-                _hoisted_108,
-                _hoisted_109,
-                vue.createElementVNode("div", _hoisted_110, [
-                  _hoisted_111,
-                  vue.createElementVNode("div", _hoisted_112, [
+            $data.activeSettingTab === "advanced" ? (vue.openBlock(), vue.createElementBlock("div", _hoisted_108, [
+              vue.createElementVNode("div", _hoisted_109, [
+                _hoisted_110,
+                _hoisted_111,
+                vue.createElementVNode("div", _hoisted_112, [
+                  _hoisted_113,
+                  vue.createElementVNode("div", _hoisted_114, [
                     (vue.openBlock(true), vue.createElementBlock(vue.Fragment, null, vue.renderList($data.settings.customCaptchaSelectors, (selector, index) => {
                       return vue.openBlock(), vue.createElementBlock("div", {
                         key: "captcha-" + index,
@@ -5244,26 +5275,26 @@
                           type: "text",
                           "onUpdate:modelValue": ($event) => $data.settings.customCaptchaSelectors[index] = $event,
                           placeholder: "例如: img[src*='captcha']"
-                        }, null, 8, _hoisted_113), [
+                        }, null, 8, _hoisted_115), [
                           [vue.vModelText, $data.settings.customCaptchaSelectors[index]]
                         ]),
                         vue.createElementVNode("button", {
                           type: "button",
                           class: "remove-selector",
                           onClick: ($event) => $options.removeSelector("captcha", index)
-                        }, " × ", 8, _hoisted_114)
+                        }, " × ", 8, _hoisted_116)
                       ]);
                     }), 128)),
                     vue.createElementVNode("button", {
                       type: "button",
                       class: "add-selector",
-                      onClick: _cache[34] || (_cache[34] = ($event) => $options.addSelector("captcha"))
+                      onClick: _cache[36] || (_cache[36] = ($event) => $options.addSelector("captcha"))
                     }, " 添加选择器 ")
                   ])
                 ]),
-                vue.createElementVNode("div", _hoisted_115, [
-                  _hoisted_116,
-                  vue.createElementVNode("div", _hoisted_117, [
+                vue.createElementVNode("div", _hoisted_117, [
+                  _hoisted_118,
+                  vue.createElementVNode("div", _hoisted_119, [
                     (vue.openBlock(true), vue.createElementBlock(vue.Fragment, null, vue.renderList($data.settings.customInputSelectors, (selector, index) => {
                       return vue.openBlock(), vue.createElementBlock("div", {
                         key: "input-" + index,
@@ -5273,35 +5304,35 @@
                           type: "text",
                           "onUpdate:modelValue": ($event) => $data.settings.customInputSelectors[index] = $event,
                           placeholder: "例如: input[name*='captcha']"
-                        }, null, 8, _hoisted_118), [
+                        }, null, 8, _hoisted_120), [
                           [vue.vModelText, $data.settings.customInputSelectors[index]]
                         ]),
                         vue.createElementVNode("button", {
                           type: "button",
                           class: "remove-selector",
                           onClick: ($event) => $options.removeSelector("input", index)
-                        }, " × ", 8, _hoisted_119)
+                        }, " × ", 8, _hoisted_121)
                       ]);
                     }), 128)),
                     vue.createElementVNode("button", {
                       type: "button",
                       class: "add-selector",
-                      onClick: _cache[35] || (_cache[35] = ($event) => $options.addSelector("input"))
+                      onClick: _cache[37] || (_cache[37] = ($event) => $options.addSelector("input"))
                     }, " 添加选择器 ")
                   ])
                 ]),
-                vue.createElementVNode("div", _hoisted_120, [
-                  _hoisted_121,
-                  vue.createElementVNode("div", _hoisted_122, [
-                    vue.createElementVNode("div", _hoisted_123, [
+                vue.createElementVNode("div", _hoisted_122, [
+                  _hoisted_123,
+                  vue.createElementVNode("div", _hoisted_124, [
+                    vue.createElementVNode("div", _hoisted_125, [
                       vue.withDirectives(vue.createElementVNode("input", {
                         type: "text",
-                        "onUpdate:modelValue": _cache[36] || (_cache[36] = ($event) => $data.settings.rulesUrl = $event),
+                        "onUpdate:modelValue": _cache[38] || (_cache[38] = ($event) => $data.settings.rulesUrl = $event),
                         placeholder: "https://ghfast.top/https://raw.githubusercontent.com/anghunk/UserScript/main/CAPTCHA-automatic-recognition/rules.json"
                       }, null, 512), [
                         [vue.vModelText, $data.settings.rulesUrl]
                       ]),
-                      _hoisted_124
+                      _hoisted_126
                     ]),
                     vue.createElementVNode("button", {
                       type: "button",
@@ -5310,26 +5341,26 @@
                         "test-success": $data.rulesLoadStatus === "success",
                         "test-error": $data.rulesLoadStatus === "error"
                       }]),
-                      onClick: _cache[37] || (_cache[37] = (...args) => $options.reloadRules && $options.reloadRules(...args))
+                      onClick: _cache[39] || (_cache[39] = (...args) => $options.reloadRules && $options.reloadRules(...args))
                     }, [
-                      $data.rulesLoadStatus === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_125, "重新加载规则")) : $data.rulesLoadStatus === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_126)) : $data.rulesLoadStatus === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_127, "加载成功")) : $data.rulesLoadStatus === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_128, "加载失败")) : vue.createCommentVNode("", true)
+                      $data.rulesLoadStatus === "" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_127, "重新加载规则")) : $data.rulesLoadStatus === "loading" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_128)) : $data.rulesLoadStatus === "success" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_129, "加载成功")) : $data.rulesLoadStatus === "error" ? (vue.openBlock(), vue.createElementBlock("span", _hoisted_130, "加载失败")) : vue.createCommentVNode("", true)
                     ], 2),
-                    _hoisted_129
+                    _hoisted_131
                   ])
                 ])
               ])
             ])) : vue.createCommentVNode("", true)
           ]),
-          vue.createElementVNode("div", _hoisted_130, [
+          vue.createElementVNode("div", _hoisted_132, [
             vue.createElementVNode("button", {
-              onClick: _cache[38] || (_cache[38] = (...args) => $options.saveSettings && $options.saveSettings(...args))
+              onClick: _cache[40] || (_cache[40] = (...args) => $options.saveSettings && $options.saveSettings(...args))
             }, "保存设置"),
             vue.createElementVNode("button", {
-              onClick: _cache[39] || (_cache[39] = (...args) => $options.closeSettings && $options.closeSettings(...args))
+              onClick: _cache[41] || (_cache[41] = (...args) => $options.closeSettings && $options.closeSettings(...args))
             }, "取消")
           ])
         ])
-      ])) : vue.createCommentVNode("", true)
+      ], 2)) : vue.createCommentVNode("", true)
     ]);
   }
   const App = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render]]);
